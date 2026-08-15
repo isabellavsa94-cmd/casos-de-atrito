@@ -21,6 +21,17 @@ try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentEle
 <body>
 
 <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle" aria-describedby="gateText">
+  <svg class="gate__iris" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <mask id="khMask">
+        <rect width="100" height="100" fill="#fff"/>
+        <!-- furo de fechadura: branco esconde, preto abre -->
+        <path id="khShape" fill="#000"
+              d="M50 41.2A5.9 5.9 0 1 1 49.99 41.2ZM47.9 51.4 46.3 60.6 53.7 60.6 52.1 51.4Z"/>
+      </mask>
+    </defs>
+    <rect width="100" height="100" fill="#000" mask="url(#khMask)"/>
+  </svg>
   <div class="gate__box">
     <span class="gate__mark" role="img" aria-label="Prudence Lub"></span>
 

@@ -420,13 +420,53 @@
   const yes = document.getElementById('gateYes');
   const no = document.getElementById('gateNo');
 
-  const enter = () => {
-    try { localStorage.setItem(KEY, 'ok'); } catch { /* modo privado */ }
+  const shape = document.getElementById('khShape');
+  const box = gate.querySelector('.gate__box');
+  const page = document.querySelector('.page');
+  const semMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const finalizar = () => {
     document.documentElement.classList.add('idade-ok');
     gate.remove();
+    if (page) page.style.transform = '';
     // devolve o foco pro comeco da pagina, nao pro nada
     const first = document.querySelector('.nav__link');
     if (first) first.focus({ preventScroll: true });
+  };
+
+  /* Abre em fechadura: o furo aparece, respira e engole a tela.
+     A escala 46 e o suficiente pro furo cobrir o viewBox de 100
+     mesmo com preserveAspectRatio=slice em tela larga. */
+  const abrirFechadura = async () => {
+    gate.style.pointerEvents = 'none';        // ja entrou: nao intercepta mais clique
+
+    box.animate([{ opacity: 1 }, { opacity: 0 }],
+      { duration: 240, easing: 'ease-out', fill: 'forwards' });
+
+    if (page) {
+      page.style.willChange = 'transform';
+      page.animate([{ transform: 'scale(1.05)' }, { transform: 'scale(1)' }],
+        { duration: 1500, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' });
+    }
+
+    // 1. o furo aparece
+    await shape.animate([{ transform: 'scale(0)' }, { transform: 'scale(1)' }],
+      { duration: 520, easing: 'cubic-bezier(.2,.9,.25,1)', fill: 'forwards' }).finished;
+
+    // 2. respira um instante — e o momento do 'segredo'
+    await new Promise(r => setTimeout(r, 260));
+
+    // 3. engole a tela
+    await shape.animate([{ transform: 'scale(1)' }, { transform: 'scale(46)' }],
+      { duration: 950, easing: 'cubic-bezier(.66,0,.86,0)', fill: 'forwards' }).finished;
+
+    finalizar();
+  };
+
+  const enter = () => {
+    try { localStorage.setItem(KEY, 'ok'); } catch { /* modo privado */ }
+    if (semMovimento || !shape || !shape.animate) { finalizar(); return; }
+    abrirFechadura();
   };
 
   const block = () => {
