@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Casos de atrito — Prudence Lub</title>
+<meta name="description" content="Qual foi seu maior caso de atrito? Conte sua história de forma anônima. Sem nome, sem e-mail, sem login.">
+<meta name="theme-color" content="#000000">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Casos de atrito">
+<meta property="og:description" content="Qual foi seu maior caso de atrito? Conte sua história de forma anônima.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='13' fill='%23c3d7de' stroke='%232c4e8f' stroke-width='2'/></svg>">
+
+<link rel="stylesheet" href="assets/app.css">
+<script>
+/* roda antes de pintar: quem ja confirmou nao ve o portao piscar */
+try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentElement.classList.add('idade-ok')}catch(e){}
+</script>
+</head>
+
+<body>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle" aria-describedby="gateText">
+  <div class="gate__box">
+    <span class="gate__mark" role="img" aria-label="Prudence Lub"></span>
+
+    <div class="gate__ask" id="gateAsk">
+      <h1 class="gate__title" id="gateTitle">Você tem 18 anos ou mais?</h1>
+      <p class="gate__text" id="gateText">Casos de atrito reúne relatos anônimos sobre sexo.
+        O conteúdo é destinado a maiores de 18 anos.</p>
+      <div class="gate__btns">
+        <button class="gate__btn gate__btn--yes" type="button" id="gateYes">Sim, tenho 18 anos ou mais</button>
+        <button class="gate__btn gate__btn--no" type="button" id="gateNo">Não, sou menor de 18</button>
+      </div>
+    </div>
+
+    <div class="gate__deny" id="gateDeny" hidden>
+      <h1 class="gate__title">Volte quando fizer 18.</h1>
+      <p class="gate__text">Este conteúdo é restrito a maiores de idade. Obrigado pela honestidade.</p>
+    </div>
+  </div>
+</div>
+
+<canvas id="fluid" aria-hidden="true"></canvas>
+
+<div class="page">
+
+  <p class="live" id="live" hidden>
+    <span class="live__dot" aria-hidden="true"></span>
+    <span id="liveN">32</span> <span class="live__word">anônimos online</span> <span class="live__eyes" aria-hidden="true">👀</span>
+  </p>
+
+  <header class="nav" id="nav">
+    <nav class="nav__pill" aria-label="Principal">
+      <a class="nav__link" href="index.html" aria-current="page">Casos de atrito</a>
+      <a class="brand" href="index.html" aria-label="Prudence Lub — início">
+        <span class="brand__mark" role="img" aria-label="Prudence Lub"></span>
+      </a>
+      <a class="nav__link" href="lub.html">O Lub</a>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <h1 class="r">
+          <img class="hero__art" src="assets/casos-de-atrito.svg"
+               width="2400" height="1025" alt="Casos de atrito"
+               fetchpriority="high" decoding="async">
+        </h1>
+        <div class="scroll r" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESCREVER  |  LER -->
+    <section class="split" id="contar">
+      <div class="wrap split__in">
+
+       <div class="col col--form">
+        <div class="col__head r">
+          <span class="eyebrow">Conte a sua</span>
+          <h2>Qual foi a sua maior história de atrito na hora do sexo?</h2>
+          <p>Aquela vez em que faltou deslize e sobrou história. A transa que travou,
+            o momento que doeu, a saída constrangedora, a risada depois. Pode contar aqui.</p>
+        </div>
+
+        <div class="panel-wrap r">
+        <svg class="panel__edge" id="panelEdge" aria-hidden="true"><path/></svg>
+        <div class="panel" id="panel">
+
+          <form id="form" novalidate>
+            <div class="anon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V6.8a4 4 0 0 1 8 0V10"/>
+              </svg>
+              <p><strong>É anônimo de verdade.</strong> Não pedimos nome, e-mail, telefone
+                nem login — não existe campo pra isso nesta página. Gênero, idade e
+                orientação são <strong>opcionais</strong> e servem só pra entender de onde
+                vem cada história.</p>
+            </div>
+
+            <div class="field field--story">
+              <label for="historia">Sua história</label>
+              <textarea id="historia" name="historia" maxlength="1500" required
+                placeholder="Conta do seu jeito. Sem pressa, sem filtro, sem nome."></textarea>
+
+              <div class="field__foot">
+                <div class="tools" role="group" aria-label="Formatação">
+                  <button class="tool" type="button" id="emojiBtn"
+                          aria-expanded="false" aria-controls="emojiPanel"
+                          aria-label="Inserir emoji" title="Emoji">🙂</button>
+                  <span class="tools__sep" aria-hidden="true"></span>
+                  <button class="tool tool--b" type="button" id="boldBtn"
+                          aria-label="Negrito" title="Negrito (Ctrl+B)">B</button>
+                  <button class="tool tool--i" type="button" id="italBtn"
+                          aria-label="Itálico" title="Itálico (Ctrl+I)">I</button>
+                </div>
+                <span class="counter" id="counter">0 / 1500</span>
+              </div>
+
+              <div class="emoji-panel" id="emojiPanel" role="group" aria-label="Emojis" hidden></div>
+            </div>
+
+            <fieldset>
+              <span class="legend">Sobre você <span class="hint">— opcional, escolha o que quiser</span></span>
+              <div class="grid3">
+                <div>
+                  <label for="genero">Gênero</label>
+                  <select id="genero" name="genero">
+                    <option value="">Prefiro não dizer</option>
+                    <option>Mulher cis</option>
+                    <option>Homem cis</option>
+                    <option>Mulher trans</option>
+                    <option>Homem trans</option>
+                    <option>Pessoa não-binária</option>
+                    <option>Travesti</option>
+                    <option>Outro</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="idade">Idade</label>
+                  <input type="number" id="idade" name="idade"
+                    min="18" max="100" step="1" inputmode="numeric"
+                    placeholder="Prefiro não dizer">
+                </div>
+
+                <div>
+                  <label for="orientacao">Orientação sexual</label>
+                  <select id="orientacao" name="orientacao">
+                    <option value="">Prefiro não dizer</option>
+                    <option>Heterossexual</option>
+                    <option>Gay</option>
+                    <option>Lésbica</option>
+                    <option>Bissexual</option>
+                    <option>Pansexual</option>
+                    <option>Assexual</option>
+                    <option>Outra</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- honeypot -->
+            <div class="hp" aria-hidden="true">
+              <label for="site">Não preencha este campo</label>
+              <input type="text" id="site" name="site" tabindex="-1" autocomplete="off">
+            </div>
+
+            <button class="btn" type="submit" id="submit"><span>Enviar minha história</span></button>
+            <p class="err" id="err" role="alert"></p>
+          </form>
+
+          <div class="done" id="done" role="status" aria-live="polite">
+            <div class="mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <h3>História recebida.</h3>
+            <p>Obrigado por contar. Ela entrou anônima, do jeito que você escreveu.</p>
+            <button class="again" type="button" id="again">Ver as histórias</button>
+          </div>
+
+        </div>
+        </div>
+       </div>
+
+       <div class="col col--feed" id="historias">
+        <div class="col__head r">
+          <span class="eyebrow">O que já contaram</span>
+          <h2>Histórias de atrito</h2>
+          <p class="feed__count" id="feedCount"></p>
+        </div>
+
+        <div class="feed__grid" id="feedGrid"></div>
+
+        <p class="feed__empty" id="feedEmpty">
+          Nenhuma história por aqui ainda. A primeira pode ser a sua.
+        </p>
+
+        <button class="feed__more" type="button" id="feedMore" hidden>Ver mais histórias</button>
+       </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <a class="tab" href="#contar">
+    <svg class="tab__shape" viewBox="0 0 480 44" aria-hidden="true">
+      <!-- colina de ombros concavos: os pontos de controle ficam a meio
+           caminho do ombro, entao a curva sai horizontal da moldura e
+           chega horizontal no plato — sem quina -->
+      <path d="M0 44C60 44 60 0 120 0L360 0C420 0 420 44 480 44Z"/>
+    </svg>
+    <span class="tab__label">Quero contar minha história</span>
+  </a>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot">
+        <a class="brand" href="index.html" aria-label="Prudence Lub — início">
+          <span class="brand__mark" role="img" aria-label="Prudence Lub"></span>
+        </a>
+        <nav class="foot__links" aria-label="Rodapé">
+          <a href="index.html" aria-current="page">Casos de atrito</a>
+          <a href="lub.html">O Lub</a>
+        </nav>
+      </div>
+      <p class="legal">
+        Conteúdo destinado a maiores de 18 anos. As histórias enviadas nesta página são
+        anônimas: não coletamos nome, e-mail, telefone ou qualquer dado que identifique
+        quem escreve. Gênero, idade e orientação sexual são de preenchimento opcional e
+        usados apenas de forma agregada. Ao enviar, você autoriza a publicação anônima do
+        seu relato, no todo ou em parte. Prudence® — todos os direitos reservados.
+      </p>
+    </div>
+  </footer>
+
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+/* =============================================================
+   Formulário + feed de histórias
+
+   ATENÇÃO: não existe backend ainda.
+
+   - FORM_ENDPOINT vazio  -> o envio não sai do navegador. A história
+     é guardada em localStorage só pra o feed ter o que mostrar em
+     demo. É por navegador: ninguém vê a história de mais ninguém.
+   - STORIES_ENDPOINT vazio -> o feed lê o mesmo localStorage.
+
+   Com os dois preenchidos a página funciona de verdade, sem mais
+   nenhuma mudança de código. O feed espera um GET devolvendo
+   [{ historia, genero, idade, orientacao }, ...] já MODERADO —
+   esta página publica o que o endpoint mandar.
+
+   O anonimato prometido é responsabilidade do backend: ele NÃO pode
+   registrar IP, User-Agent nem timestamp de precisão suficiente pra
+   cruzar com outros logs.
+   ============================================================= */
+(() => {
+  const FORM_ENDPOINT = '';      // POST — ex.: 'https://track-....../historias'
+  const STORIES_ENDPOINT = '';   // GET  — ex.: 'https://track-....../historias'
+  const VOTE_ENDPOINT = '';      // POST — ex.: 'https://track-....../historias/voto'
+  const LOCAL_KEY = 'casos-de-atrito:local';
+  const VOTES_KEY = 'casos-de-atrito:votos';
+  const VOTED_KEY = 'casos-de-atrito:votei';
+  const PAGE = 6;
+
+  const form = document.getElementById('form');
+  const done = document.getElementById('done');
+  const err = document.getElementById('err');
+  const submit = document.getElementById('submit');
+  const historia = document.getElementById('historia');
+  const counter = document.getElementById('counter');
+  const idade = document.getElementById('idade');
+  const MAX = 1500;
+  const IDADE_MIN = 18, IDADE_MAX = 100;
+
+  // só dígitos no campo de idade — bloqueia "e", "+", "-" e vírgula do type=number
+  idade.addEventListener('keydown', (e) => {
+    if (['e', 'E', '+', '-', ',', '.'].includes(e.key)) e.preventDefault();
+  });
+  idade.addEventListener('input', () => {
+    idade.value = idade.value.replace(/\D/g, '').slice(0, 3);
+    idade.classList.remove('is-bad');
+  });
+
+  // contador de caracteres
+  const updateCounter = () => {
+    const n = historia.value.length;
+    counter.textContent = `${n} / ${MAX}`;
+    counter.classList.toggle('is-near', n > MAX * 0.9);
+  };
+  historia.addEventListener('input', updateCounter);
+  updateCounter();
+
+  const fail = (msg) => {
+    err.textContent = msg;
+    err.classList.add('is-on');
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.classList.remove('is-on');
+
+    // honeypot: bot preencheu o campo escondido — finge sucesso e descarta
+    if (form.site.value) { form.style.display = 'none'; done.classList.add('is-on'); return; }
+
+    const texto = historia.value.trim();
+    if (texto.length < 40) {
+      fail('Conta um pouco mais — pelo menos umas linhas pra história fazer sentido.');
+      historia.focus();
+      return;
+    }
+
+    // idade é opcional, mas se vier tem que estar entre 18 e 100
+    let anos = null;
+    if (idade.value.trim()) {
+      anos = parseInt(idade.value, 10);
+      if (!Number.isFinite(anos) || anos < IDADE_MIN || anos > IDADE_MAX) {
+        fail(anos < IDADE_MIN
+          ? 'Esta página é só para maiores de 18 anos.'
+          : `Coloque uma idade entre ${IDADE_MIN} e ${IDADE_MAX} — ou deixe em branco.`);
+        idade.classList.add('is-bad');
+        idade.focus();
+        return;
+      }
+    }
+
+    // payload sem nada que identifique quem escreveu
+    const payload = {
+      historia: texto,
+      genero: form.genero.value || null,
+      idade: anos,
+      orientacao: form.orientacao.value || null
+    };
+
+    submit.disabled = true;
+    submit.querySelector('span').textContent = 'Enviando…';
+
+    try {
+      if (FORM_ENDPOINT) {
+        const res = await fetch(FORM_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(res.status);
+      }
+      // sem endpoint, guarda local só pra o feed ter o que mostrar em demo
+      if (!FORM_ENDPOINT) saveLocal(payload);
+
+      form.style.display = 'none';
+      done.classList.add('is-on');
+      done.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+      stories = await loadStories();
+      paint(true);
+    } catch {
+      submit.disabled = false;
+      submit.querySelector('span').textContent = 'Enviar minha história';
+      fail('Não deu pra enviar agora. Tenta de novo em alguns instantes.');
+    }
+  });
+
+
+  /* ---------- feed ---------- */
+  const grid = document.getElementById('feedGrid');
+  const empty = document.getElementById('feedEmpty');
+  const moreBtn = document.getElementById('feedMore');
+  const countEl = document.getElementById('feedCount');
+
+  let stories = [];
+  let shown = 0;
+
+  const newId = () => (crypto.randomUUID ? crypto.randomUUID()
+                                         : 'h' + Date.now() + Math.random().toString(36).slice(2));
+
+  function saveLocal(story) {
+    const local = readJSON(LOCAL_KEY, []);
+    local.unshift({ ...story, id: newId() });
+    writeJSON(LOCAL_KEY, local.slice(0, 200));
+  }
+
+  async function loadStories() {
+    if (STORIES_ENDPOINT) {
+      try {
+        const res = await fetch(STORIES_ENDPOINT);
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        return Array.isArray(data) ? data : (data.historias || []);
+      } catch { return []; }
+    }
+    // backfill de id em registros antigos, pra o voto ter chave estável
+    const local = readJSON(LOCAL_KEY, []);
+    let dirty = false;
+    for (const h of local) if (!h.id) { h.id = newId(); dirty = true; }
+    if (dirty) writeJSON(LOCAL_KEY, local);
+    return local;
+  }
+
+  /* ---------- votos ----------
+     Sem VOTE_ENDPOINT os votos vivem em localStorage: contam por
+     navegador e servem pra demo. Com endpoint, o servidor e a fonte
+     da verdade e o numero vem junto com a historia (s.votos). */
+  const readJSON = (k, fb) => {
+    try { return JSON.parse(localStorage.getItem(k)) ?? fb; } catch { return fb; }
+  };
+  const writeJSON = (k, v) => {
+    try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage cheio/bloqueado */ }
+  };
+
+  const localVotes = () => readJSON(VOTES_KEY, {});
+  const votedIds = () => new Set(readJSON(VOTED_KEY, []));
+
+  function voteCount(s) {
+    if (VOTE_ENDPOINT || STORIES_ENDPOINT) return Number(s.votos) || 0;
+    return Number(localVotes()[s.id]) || 0;
+  }
+
+  async function sendVote(id, delta) {
+    if (!VOTE_ENDPOINT) {
+      const v = localVotes();
+      v[id] = Math.max(0, (Number(v[id]) || 0) + delta);
+      writeJSON(VOTES_KEY, v);
+      return;
+    }
+    await fetch(VOTE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, delta })
+    });
+  }
+
+  function voteButton(s) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'vote';
+
+    const drop = document.createElement('span');
+    drop.className = 'vote__drop';
+    drop.textContent = '💦';
+    drop.setAttribute('aria-hidden', 'true');
+
+    const n = document.createElement('span');
+    n.className = 'vote__n';
+
+    btn.append(drop, n);
+
+    let on = votedIds().has(s.id);
+    let count = voteCount(s);
+
+    const sync = () => {
+      n.textContent = count;
+      btn.classList.toggle('is-on', on);
+      btn.setAttribute('aria-pressed', String(on));
+      btn.setAttribute('aria-label',
+        `${count} ${count === 1 ? 'gota' : 'gotas'}. ${on ? 'Remover meu voto' : 'Votar nesta história'}`);
+    };
+    sync();
+
+    btn.addEventListener('click', async () => {
+      const delta = on ? -1 : 1;
+      on = !on;
+      count = Math.max(0, count + delta);
+      sync();
+
+      if (on) {
+        btn.classList.remove('is-pop');
+        void btn.offsetWidth;          // reinicia a animação
+        btn.classList.add('is-pop');
+      }
+
+      // registra quem eu votei (por navegador, não identifica ninguém)
+      const set = votedIds();
+      on ? set.add(s.id) : set.delete(s.id);
+      writeJSON(VOTED_KEY, [...set]);
+
+      try { await sendVote(s.id, delta); }
+      catch {
+        // servidor recusou: desfaz pra não mentir o número
+        on = !on;
+        count = Math.max(0, count - delta);
+        const back = votedIds();
+        on ? back.add(s.id) : back.delete(s.id);
+        writeJSON(VOTED_KEY, [...back]);
+        sync();
+      }
+    });
+
+    return btn;
+  }
+
+  /* Converte **negrito** e _italico_ montando nos de texto e elementos.
+     Sem innerHTML em nenhum ponto: o resto do texto entra como texto
+     literal, entao markup enviado no relato nao vira elemento. */
+  function marcarTexto(alvo, texto) {
+    alvo.textContent = '';
+    const re = /\*\*([^*\n]+)\*\*|_([^_\n]+)_/g;
+    let i = 0, m;
+    while ((m = re.exec(texto)) !== null) {
+      if (m.index > i) alvo.appendChild(document.createTextNode(texto.slice(i, m.index)));
+      const forte = m[1] !== undefined;
+      const tag = document.createElement(forte ? 'strong' : 'em');
+      tag.textContent = forte ? m[1] : m[2];
+      alvo.appendChild(tag);
+      i = re.lastIndex;
+    }
+    if (i < texto.length) alvo.appendChild(document.createTextNode(texto.slice(i)));
+  }
+
+  function storyCard(s) {
+    const el = document.createElement('article');
+    el.className = 'story';
+
+    const p = document.createElement('p');
+    p.className = 'story__text is-clamped';
+    marcarTexto(p, String(s.historia || ''));
+    el.appendChild(p);
+
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'story__more';
+    more.textContent = 'Ler tudo';
+    more.hidden = true;
+    more.addEventListener('click', () => {
+      const clamped = p.classList.toggle('is-clamped');
+      more.textContent = clamped ? 'Ler tudo' : 'Recolher';
+    });
+    el.appendChild(more);
+
+    const foot = document.createElement('div');
+    foot.className = 'story__foot';
+
+    const meta = document.createElement('p');
+    meta.className = 'story__meta';
+    const bits = [
+      s.genero,
+      Number.isFinite(+s.idade) && s.idade ? `${s.idade} anos` : null,
+      s.orientacao
+    ].filter(Boolean);
+    meta.textContent = bits.length ? bits.join(' · ') : 'Anônimo';
+    foot.appendChild(meta);
+
+    foot.appendChild(voteButton(s));
+    el.appendChild(foot);
+
+    // "Ler tudo" só aparece se o texto realmente estourar o clamp
+    requestAnimationFrame(() => {
+      if (p.scrollHeight - p.clientHeight > 4) more.hidden = false;
+    });
+
+    return el;
+  }
+
+  function paint(reset) {
+    if (reset) { grid.textContent = ''; shown = 0; }
+
+    for (const s of stories.slice(shown, shown + PAGE)) grid.appendChild(storyCard(s));
+    shown = Math.min(shown + PAGE, stories.length);
+
+    moreBtn.hidden = shown >= stories.length;
+    empty.hidden = stories.length > 0;
+    countEl.textContent = stories.length
+      ? `${stories.length} ${stories.length === 1 ? 'história contada' : 'histórias contadas'}`
+      : '';
+  }
+
+  moreBtn.addEventListener('click', () => paint(false));
+  document.getElementById('again').addEventListener('click', () => {
+    document.getElementById('historias').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  loadStories().then(s => { stories = s; paint(true); });
+
+
+  /* ---------- ondulação no hover do botão ---------- */
+  let lastRipple = 0;
+  const ripple = (e) => {
+    const now = performance.now();
+    if (now - lastRipple < 190) return;   // throttle: senão vira sopa de anéis
+    lastRipple = now;
+
+    const r = submit.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+
+    // diâmetro que alcança o canto mais distante do cursor
+    const d = 2 * Math.max(
+      Math.hypot(x, y), Math.hypot(r.width - x, y),
+      Math.hypot(x, r.height - y), Math.hypot(r.width - x, r.height - y)
+    );
+
+    const el = document.createElement('span');
+    el.className = 'ripple';
+    el.style.cssText = `left:${x}px;top:${y}px;width:${d}px;height:${d}px`;
+    submit.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  };
+  submit.addEventListener('pointerenter', ripple);
+  submit.addEventListener('pointermove', ripple);
+})();
+
+
+/* =============================================================
+   Borda ondulada da janela de escrever
+
+   Percorre o perimetro do retangulo somando um seno na normal de
+   cada lado. Cada lado recebe um numero INTEIRO de ondas, entao a
+   curva volta a zero exatamente nos cantos e as quinas fecham sem
+   degrau. O mesmo caminho vira clip-path do painel (pro vidro seguir
+   a onda) e stroke de um svg irmao (pro contorno nao ser cortado).
+   ============================================================= */
+(() => {
+  const panel = document.getElementById('panel');
+  const svg = document.getElementById('panelEdge');
+  if (!panel || !svg || !CSS.supports('clip-path', 'path("M0 0L1 1Z")')) return;
+
+  const path = svg.querySelector('path');
+  const AMP = 5;          // altura da onda
+  const TARGET = 46;      // comprimento de onda alvo, ajustado pra fechar inteiro
+  const SEG = 10;         // segmentos por onda
+
+  function build(w, h) {
+    const pts = [];
+    const side = (x0, y0, x1, y1, nx, ny) => {
+      const len = Math.hypot(x1 - x0, y1 - y0);
+      const waves = Math.max(2, Math.round(len / TARGET));
+      const steps = waves * SEG;
+      for (let i = 0; i < steps; i++) {
+        const t = i / steps;
+        const off = Math.sin(t * waves * Math.PI * 2) * AMP;
+        pts.push([x0 + (x1 - x0) * t + nx * off, y0 + (y1 - y0) * t + ny * off]);
+      }
+    };
+
+    const m = AMP;   // margem pra crista da onda nao vazar da caixa
+    side(m, m, w - m, m, 0, -1);        // topo
+    side(w - m, m, w - m, h - m, 1, 0); // direita
+    side(w - m, h - m, m, h - m, 0, 1); // base
+    side(m, h - m, m, m, -1, 0);        // esquerda
+
+    return 'M' + pts.map(pt => pt[0].toFixed(1) + ' ' + pt[1].toFixed(1)).join('L') + 'Z';
+  }
+
+  function apply() {
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    if (!w || !h) return;
+    const d = build(w, h);
+    panel.style.clipPath = `path('${d}')`;
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    path.setAttribute('d', d);
+  }
+
+  // o painel muda de altura ao digitar, ao trocar pra confirmacao e no resize
+  new ResizeObserver(apply).observe(panel);
+  apply();
+})();
+
+
+
+
+/* =============================================================
+   Seletor de emoji
+
+   Insere no ponto do cursor, respeita o limite de 1500 e dispara
+   'input' pra o contador acompanhar. Navegacao por setas com
+   tabindex rotativo: um unico ponto de parada no Tab, e nao 50.
+   ============================================================= */
+(() => {
+  const btn = document.getElementById('emojiBtn');
+  const panel = document.getElementById('emojiPanel');
+  const campo = document.getElementById('historia');
+  if (!btn || !panel || !campo) return;
+
+  const MAX = 1500;
+  const EMOJIS = [
+    '😅','😂','🤣','😭','😳','😬','🙃','😏','😍','🥰','🥵','🤤',
+    '😴','🤯','🙈','🫠','🥴','😌','😤','🫣','😮','😶',
+    '❤️','🧡','💛','💚','💙','💜','🖤','💔','💘','💋',
+    '🔥','✨','💫','⚡','💦','💧','🌊','🫧',
+    '🍑','🍆','🌶️','🍒','🥂','🕯️','🛏️','🧴',
+    '👀','🫦','🙌','👏','🤞','🤏','🫶','💅',
+  ];
+
+  let idx = 0;
+
+  EMOJIS.forEach((e, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = e;
+    b.tabIndex = i === 0 ? 0 : -1;
+    b.setAttribute('aria-label', `Inserir ${e}`);
+    b.addEventListener('click', () => inserir(e));
+    panel.appendChild(b);
+  });
+  const botoes = [...panel.querySelectorAll('button')];
+
+  function inserir(emoji) {
+    const ini = campo.selectionStart ?? campo.value.length;
+    const fim = campo.selectionEnd ?? ini;
+    const novo = campo.value.slice(0, ini) + emoji + campo.value.slice(fim);
+    if (novo.length > MAX) return;              // nao estoura o limite do campo
+
+    campo.value = novo;
+    const pos = ini + emoji.length;
+    campo.focus();
+    campo.setSelectionRange(pos, pos);
+    campo.dispatchEvent(new Event('input', { bubbles: true }));   // atualiza o contador
+  }
+
+  const abrir = (v) => {
+    panel.hidden = !v;
+    btn.setAttribute('aria-expanded', String(v));
+    if (v) { idx = 0; botoes.forEach((b, i) => b.tabIndex = i ? -1 : 0); }
+  };
+
+  btn.addEventListener('click', () => abrir(panel.hidden));
+
+  // Esc no documento, nao so no painel: depois de abrir pelo botao o foco
+  // fica NO BOTAO, e um listener preso ao painel nunca receberia a tecla
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || panel.hidden) return;
+    abrir(false);
+    btn.focus();
+  });
+
+  panel.addEventListener('keydown', (e) => {
+    const cols = Math.max(1, Math.round(panel.clientWidth / botoes[0].offsetWidth));
+    const mapa = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols };
+    if (!(e.key in mapa)) return;
+    e.preventDefault();
+    const prox = Math.min(botoes.length - 1, Math.max(0, idx + mapa[e.key]));
+    botoes[idx].tabIndex = -1;
+    idx = prox;
+    botoes[idx].tabIndex = 0;
+    botoes[idx].focus();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!panel.hidden && !panel.contains(e.target) && e.target !== btn) abrir(false);
+  });
+})();
+
+
+
+/* =============================================================
+   Negrito e italico
+
+   O campo e textarea (texto puro), entao formatacao vira MARCADOR no
+   proprio texto: **negrito** e _italico_. O feed converte na hora de
+   exibir, montando <strong>/<em> por createElement — nunca innerHTML,
+   porque o texto vem de terceiro.
+   ============================================================= */
+(() => {
+  const campo = document.getElementById('historia');
+  const bold = document.getElementById('boldBtn');
+  const ital = document.getElementById('italBtn');
+  if (!campo || !bold || !ital) return;
+
+  const MAX = 1500;
+
+  function envolver(marca) {
+    const v = campo.value;
+    const n = marca.length;
+    const ini = campo.selectionStart, fim = campo.selectionEnd;
+    const sel = v.slice(ini, fim);
+
+    let novo, a, b;
+
+    if (sel.length >= n * 2 && sel.startsWith(marca) && sel.endsWith(marca)) {
+      // marcadores dentro da selecao: tira
+      novo = v.slice(0, ini) + sel.slice(n, -n) + v.slice(fim);
+      a = ini; b = fim - n * 2;
+    } else if (v.slice(ini - n, ini) === marca && v.slice(fim, fim + n) === marca) {
+      // marcadores logo fora da selecao: tira
+      novo = v.slice(0, ini - n) + sel + v.slice(fim + n);
+      a = ini - n; b = fim - n;
+    } else {
+      novo = v.slice(0, ini) + marca + sel + marca + v.slice(fim);
+      if (novo.length > MAX) return;            // nao estoura o limite
+      a = ini + n; b = fim + n;                 // cursor entre as marcas quando nao ha selecao
+    }
+
+    campo.value = novo;
+    campo.focus();
+    campo.setSelectionRange(a, b);
+    campo.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  bold.addEventListener('click', () => envolver('**'));
+  ital.addEventListener('click', () => envolver('_'));
+
+  campo.addEventListener('keydown', (e) => {
+    if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (k === 'b') { e.preventDefault(); envolver('**'); }
+    if (k === 'i') { e.preventDefault(); envolver('_'); }
+  });
+})();
+
+</script>
+</body>
+</html>

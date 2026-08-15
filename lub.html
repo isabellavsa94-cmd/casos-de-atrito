@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>O Lub — Prudence</title>
+<meta name="description" content="Prudence Lub: lubrificante íntimo, sem aroma, não pegajoso, não mancha. 100 g.">
+<meta name="theme-color" content="#000000">
+<meta property="og:type" content="website">
+<meta property="og:title" content="O Lub — Prudence">
+<meta property="og:description" content="Lubrificante íntimo, sem aroma, não pegajoso, não mancha. 100 g.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='13' fill='%23c3d7de' stroke='%232c4e8f' stroke-width='2'/></svg>">
+<link rel="stylesheet" href="assets/app.css">
+<script>
+/* roda antes de pintar: quem ja confirmou nao ve o portao piscar */
+try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentElement.classList.add('idade-ok')}catch(e){}
+</script>
+</head>
+
+<body>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle" aria-describedby="gateText">
+  <div class="gate__box">
+    <span class="gate__mark" role="img" aria-label="Prudence Lub"></span>
+
+    <div class="gate__ask" id="gateAsk">
+      <h1 class="gate__title" id="gateTitle">Você tem 18 anos ou mais?</h1>
+      <p class="gate__text" id="gateText">Casos de atrito reúne relatos anônimos sobre sexo.
+        O conteúdo é destinado a maiores de 18 anos.</p>
+      <div class="gate__btns">
+        <button class="gate__btn gate__btn--yes" type="button" id="gateYes">Sim, tenho 18 anos ou mais</button>
+        <button class="gate__btn gate__btn--no" type="button" id="gateNo">Não, sou menor de 18</button>
+      </div>
+    </div>
+
+    <div class="gate__deny" id="gateDeny" hidden>
+      <h1 class="gate__title">Volte quando fizer 18.</h1>
+      <p class="gate__text">Este conteúdo é restrito a maiores de idade. Obrigado pela honestidade.</p>
+    </div>
+  </div>
+</div>
+
+<canvas id="fluid" aria-hidden="true"></canvas>
+
+<div class="page">
+
+  <p class="live" id="live" hidden>
+    <span class="live__dot" aria-hidden="true"></span>
+    <span id="liveN">32</span> <span class="live__word">anônimos online</span> <span class="live__eyes" aria-hidden="true">👀</span>
+  </p>
+
+  <header class="nav" id="nav">
+    <nav class="nav__pill" aria-label="Principal">
+      <a class="nav__link" href="index.html">Casos de atrito</a>
+      <a class="brand" href="index.html" aria-label="Prudence Lub — início">
+        <span class="brand__mark" role="img" aria-label="Prudence Lub"></span>
+      </a>
+      <a class="nav__link" href="lub.html" aria-current="page">O Lub</a>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <!-- SOBRE O LUB -->
+    <section class="about" id="lub">
+      <div class="wrap">
+        <div class="about__head r">
+          <span class="eyebrow">Sobre o produto</span>
+          <h2>Prudence Lub</h2>
+          <p>Lubrificante íntimo, 100&nbsp;g. Tudo que está aqui vem escrito no tubo.</p>
+        </div>
+
+        <div class="about__stage r">
+          <img class="about__tube"
+               src="assets/lub-tubo.webp" width="480" height="1401"
+               alt="Tubo de Prudence Lub — lubrificante íntimo, sem aroma, 100 g"
+               loading="lazy" decoding="async">
+
+          <ul class="bubbles">
+            <li class="bubble" style="--x:13%;--y:19%;--d:clamp(96px,10.5vw,152px)">Sem<br>aroma</li>
+            <li class="bubble" style="--x:9%;--y:52%;--d:clamp(104px,11.5vw,168px)">Não<br>pegajoso</li>
+            <li class="bubble" style="--x:19%;--y:83%;--d:clamp(96px,10.5vw,150px)">Não<br>mancha</li>
+            <li class="bubble" style="--x:86%;--y:25%;--d:clamp(110px,12vw,176px)">Lubrificante<br>íntimo</li>
+            <li class="bubble" style="--x:84%;--y:63%;--d:clamp(92px,10vw,140px)">100&nbsp;g</li>
+          </ul>
+
+          <span class="fizz" style="--x:29%;--y:8%;--d:26px"></span>
+          <span class="fizz" style="--x:4%;--y:33%;--d:15px"></span>
+          <span class="fizz" style="--x:24%;--y:64%;--d:34px"></span>
+          <span class="fizz" style="--x:7%;--y:91%;--d:19px"></span>
+          <span class="fizz" style="--x:71%;--y:11%;--d:17px"></span>
+          <span class="fizz" style="--x:95%;--y:41%;--d:29px"></span>
+          <span class="fizz" style="--x:70%;--y:78%;--d:22px"></span>
+          <span class="fizz" style="--x:92%;--y:88%;--d:14px"></span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- FICHA TECNICA -->
+    <section class="specs" id="ficha">
+      <div class="wrap">
+        <div class="col__head r" style="text-align:center">
+          <span class="eyebrow">Ficha técnica</span>
+          <h2>O que tem dentro</h2>
+        </div>
+
+        <dl class="spec">
+          <div class="spec__row r"><dt>Fabricante</dt><dd>DKT do Brasil</dd></div>
+          <div class="spec__row r"><dt>Conteúdo</dt><dd>100&nbsp;g</dd></div>
+          <div class="spec__row r"><dt>Base</dt><dd>Água</dd></div>
+          <div class="spec__row r"><dt>Aspecto</dt><dd>Gel transparente e incolor</dd></div>
+          <div class="spec__row r"><dt>Aroma e sabor</dt><dd>Não tem</dd></div>
+          <div class="spec__row r"><dt>Compatibilidade</dt><dd>Preservativos de látex — a base de água não danifica a barreira</dd></div>
+          <div class="spec__row r"><dt>Remoção</dt><dd>Solúvel em água; não deixa mancha em pele ou tecido</dd></div>
+          <div class="spec__row r"><dt>Uso</dt><dd>Tópico, externo. Produto para pessoas adultas</dd></div>
+          <div class="spec__row r"><dt>Conservação</dt><dd>Entre 15&nbsp;°C e 30&nbsp;°C, longe de luz e umidade, fora do alcance de crianças</dd></div>
+          <div class="spec__row spec__row--wide r">
+            <dt>Composição</dt>
+            <dd>Propilenoglicol, glicerina, hidroxietilcelulose, benzoato de sódio,
+              polissorbato&nbsp;20, EDTA dissódico, ácido lático e água deionizada.</dd>
+          </div>
+        </dl>
+
+        <p class="spec__nota r">
+          Dados reunidos a partir do rótulo do produto e de fichas publicadas por
+          farmácias e distribuidores. <strong>Confira sempre a embalagem</strong> — a
+          fórmula pode variar entre lotes e versões.
+        </p>
+      </div>
+    </section>
+
+    <!-- ONDE COMPRAR -->
+    <section class="lojas" id="onde-comprar">
+      <div class="wrap">
+        <div class="col__head r" style="text-align:center">
+          <span class="eyebrow">Onde comprar</span>
+          <h2>Encontre perto de você</h2>
+          <p>O Lub está em farmácias, supermercados e sex shops. Use sua localização
+            para abrir o mapa com as lojas mais próximas.</p>
+        </div>
+
+        <div class="lojas__box r">
+          <button class="btn btn--inline" type="button" id="acharLojas">
+            <span>Ver lojas perto de mim</span>
+          </button>
+          <p class="lojas__status" id="lojasStatus" role="status" aria-live="polite"></p>
+          <p class="lojas__privacidade">
+            Sua localização é usada só para montar a busca no mapa, no seu próprio
+            navegador. Ela não é enviada para nós nem guardada em lugar nenhum.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lub-cta">
+      <div class="wrap">
+        <p class="r">Já teve um caso de atrito?</p>
+        <a class="btn btn--inline r" href="index.html#contar"><span>Contar a minha história</span></a>
+      </div>
+    </section>
+
+  </main>
+
+  <a class="tab" href="index.html#contar">
+    <svg class="tab__shape" viewBox="0 0 480 44" aria-hidden="true">
+      <!-- colina de ombros concavos: os pontos de controle ficam a meio
+           caminho do ombro, entao a curva sai horizontal da moldura e
+           chega horizontal no plato — sem quina -->
+      <path d="M0 44C60 44 60 0 120 0L360 0C420 0 420 44 480 44Z"/>
+    </svg>
+    <span class="tab__label">Quero contar minha história</span>
+  </a>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot">
+        <a class="brand" href="index.html" aria-label="Prudence Lub — início">
+          <span class="brand__mark" role="img" aria-label="Prudence Lub"></span>
+        </a>
+        <nav class="foot__links" aria-label="Rodapé">
+          <a href="index.html">Casos de atrito</a>
+          <a href="lub.html" aria-current="page">O Lub</a>
+        </nav>
+      </div>
+      <p class="legal">
+        Conteúdo destinado a maiores de 18 anos. As características descritas nesta página
+        reproduzem o que consta no rótulo do produto. Leia as informações da embalagem antes
+        de usar. Lubrificantes não são métodos contraceptivos e não previnem infecções
+        sexualmente transmissíveis — use preservativo. Em caso de irritação, suspenda o uso.
+        Prudence® — todos os direitos reservados.
+      </p>
+    </div>
+  </footer>
+
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+/* =============================================================
+   Onde comprar
+
+   Nao existe base de lojas nem chave de mapa, e a pagina nao faz
+   request externo. Entao o localizador NAO inventa endereco: ele usa
+   a geolocalizacao do navegador (so no clique) pra montar uma busca
+   no mapa e abre numa aba nova. A coordenada nao sai do navegador a
+   nao ser dentro dessa URL que a propria pessoa abre.
+
+   Quando o cliente tiver a lista oficial de pontos de venda, preencha
+   LOJAS_ENDPOINT (GET ?lat=&lng= -> [{nome, endereco, distancia}]) e
+   troque o comportamento por uma lista de verdade.
+   ============================================================= */
+(() => {
+  const LOJAS_ENDPOINT = '';   // GET ?lat=&lng= -> [{ nome, endereco, distancia }]
+  const BUSCA = 'Prudence Lub lubrificante';
+
+  const btn = document.getElementById('acharLojas');
+  const status = document.getElementById('lojasStatus');
+  if (!btn || !status) return;
+
+  const diz = (msg, erro) => {
+    status.textContent = msg;
+    if (erro) status.setAttribute('data-erro', ''); else status.removeAttribute('data-erro');
+  };
+
+  const abrir = (url) => window.open(url, '_blank', 'noopener');
+
+  const semLocal = () => {
+    diz('Não deu pra pegar sua localização. Abrimos a busca geral — o mapa vai usar a localização do seu aparelho.');
+    abrir(`https://www.google.com/maps/search/${encodeURIComponent(BUSCA + ' perto de mim')}`);
+  };
+
+  btn.addEventListener('click', () => {
+    if (!navigator.geolocation) { semLocal(); return; }
+
+    diz('Procurando lojas perto de você…');
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const { latitude: lat, longitude: lng } = coords;
+        diz('Abrindo o mapa com as lojas mais próximas.');
+        abrir(`https://www.google.com/maps/search/${encodeURIComponent(BUSCA)}/@${lat},${lng},14z`);
+      },
+      () => semLocal(),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  });
+})();
+</script>
+
+</body>
+</html>
