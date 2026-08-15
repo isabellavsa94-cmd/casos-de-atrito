@@ -425,10 +425,21 @@
   const page = document.querySelector('.page');
   const semMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  let animPagina = null;
+
   const finalizar = () => {
     document.documentElement.classList.add('idade-ok');
     gate.remove();
-    if (page) page.style.transform = '';
+    if (page) {
+      // Cancelar a animacao, nao so limpar o estilo: com fill:'forwards' ela
+      // segue aplicando transform DEPOIS de terminar, e vence o inline. Mesmo
+      // sendo identidade, qualquer transform != none (e o will-change) cria
+      // bloco de contencao pra descendentes position:fixed — e a aba do rodape
+      // e o contador passariam a se ancorar no fim do conteudo, nao na tela.
+      if (animPagina) animPagina.cancel();
+      page.style.transform = '';
+      page.style.willChange = '';
+    }
     // devolve o foco pro comeco da pagina, nao pro nada
     const first = document.querySelector('.nav__link');
     if (first) first.focus({ preventScroll: true });
@@ -445,7 +456,7 @@
 
     if (page) {
       page.style.willChange = 'transform';
-      page.animate([{ transform: 'scale(1.05)' }, { transform: 'scale(1)' }],
+      animPagina = page.animate([{ transform: 'scale(1.05)' }, { transform: 'scale(1)' }],
         { duration: 1500, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' });
     }
 
