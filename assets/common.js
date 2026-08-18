@@ -643,7 +643,7 @@
     { n: '05', nome: 'Depois',       vibe: 'calmo',          capa: '#1b3160', fg: '#f1f6f8', fundo: '#16294d', tilt: -4.5, arquivo: 'assets/audio/05-depois.mp3' },
   ];
 
-  const ALBUM = 'Casos de atrito, Vol. I';
+  const ALBUM = 'Histórias de atrito, Vol. I';
   const CHAVE = 'casos-de-atrito:disco';
 
   /* Geometria do palco — medida na referencia a 1280x800:
