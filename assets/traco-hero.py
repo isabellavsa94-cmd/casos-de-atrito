@@ -25,8 +25,11 @@ base.paste(im, (pad, pad))
 m = base.getchannel('A')
 for _ in range(r):
     m = m.filter(ImageFilter.MaxFilter(3))
-# tira o degrau do quadrado do filtro e devolve o antialias
-m = m.filter(ImageFilter.GaussianBlur(1.1))
+# Tira o degrau do quadrado do MaxFilter e devolve o antialias. O
+# alisamento acompanha o raio: fixo em 1.1 ele comeria boa parte de um
+# traco de 2px, que e da mesma ordem de grandeza.
+suave = max(0.45, min(1.1, r * 0.36))
+m = m.filter(ImageFilter.GaussianBlur(suave))
 m = m.point(lambda v: 0 if v < 40 else 255 if v > 150 else int((v - 40) / 110 * 255))
 
 traco = Image.new('RGBA', base.size, (0, 0, 0, 255))
