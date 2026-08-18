@@ -1350,12 +1350,12 @@
   // ninguem ver — ficava menos de um quarto do tempo na tela, com 6px
   // de diametro e quase nenhum contraste.
   const PONTAS = [
-    { x: 8.33,  y: 91.59, cor: '#94afb1' },
-    { x: 27.55, y: 97.26, cor: '#789ba0' },
-    { x: 42.02, y: 99.61, cor: '#789ba1' },
-    { x: 60.06, y: 89.43, cor: '#769ca4' },
-    { x: 69.57, y: 94.91, cor: '#789ba1' },
-    { x: 86.82, y: 90.41, cor: '#789ca4' },
+    { x: 8.46,  y: 91.70, cor: '#95aeb3' },
+    { x: 27.16, y: 97.23, cor: '#789ba1' },
+    { x: 42.79, y: 99.80, cor: '#789ba1' },
+    { x: 60.30, y: 89.53, cor: '#789ba1' },
+    { x: 70.45, y: 95.06, cor: '#789ba1' },
+    { x: 86.97, y: 90.32, cor: '#789ba1' },
   ];
 
   const MIN = 2300, VAR = 3600;   // 2,3 a 5,9s entre gotas

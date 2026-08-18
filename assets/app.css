@@ -207,7 +207,7 @@
     /* drop-shadow, nao box-shadow: o arquivo tem alpha, entao a sombra
        segue a silhueta das letras em vez do retangulo da imagem.
        Mesmo navy da sombra do tubo do Lub. */
-    filter:drop-shadow(0 16px 24px rgba(27,49,96,.24));
+    filter:drop-shadow(0 18px 26px rgba(27,49,96,.34));
   }
   /* Fora do fluxo, ancorada no pe do hero: no fluxo ela somava altura
      abaixo da arte e empurrava o lockup pra cima do centro. Assim o h1
