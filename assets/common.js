@@ -590,3 +590,734 @@
   });
 
 })();
+
+/* =============================================================
+   Trilha — escolher o disco pra escrever "na vibe"
+
+   Botao na ponta esquerda, fora do pill preto, abre a janela dos
+   discos: um coverflow em WebGL2 com arrasto, inercia e encaixe.
+
+   COMO ESTA MONTADO — duas camadas sobrepostas:
+
+   1. DOM (semantica)  — um <button> por disco, com nome e clima no
+      rotulo. E ele que responde a Tab, a leitor de tela e ao clique.
+      As posicoes vem da MESMA conta que desenha o WebGL, entao a
+      area de clique cai exatamente em cima do que se ve.
+   2. WebGL (pixels)   — as capas viram textura e sao desenhadas num
+      canvas so, com deformacao no arrasto, reflexo e fundo que troca
+      de cor conforme o disco. Com o canvas no ar, as capas do DOM
+      ficam transparentes: continuam clicaveis, so nao pintam.
+
+   Sem WebGL2 (ou em prefers-reduced-motion) o canvas nao entra e as
+   capas do DOM aparecem — mesmo layout, sem deformacao. Nada quebra.
+
+   ATENCAO — as faixas ainda NAO tem audio.
+   Todo `arquivo` esta vazio: o tocador esta inteiro (play/pause,
+   tempo, barra, proxima/anterior, encadeamento no fim da faixa), mas
+   sem arquivo ele fica desabilitado e a janela diz isso. Nada aqui
+   simula reproducao: barra parada e "--:--" e o estado honesto de
+   quem nao tem som.
+
+   Pra ligar o som: coloque os arquivos em html/assets/audio/ e
+   preencha `arquivo` de cada disco. Nada mais precisa mudar — e
+   mesma origem, entao a pagina segue sem request externo.
+
+   As capas sao PLACEHOLDER, desenhadas em canvas 2D a partir da
+   paleta da campanha. Nao ha arte de marca inventada aqui: quando
+   vier a arte real, cada disco troca o desenho por uma imagem.
+   ============================================================= */
+(() => {
+  const DISCOS = [
+    /* `capa` pinta o disco; `fundo` pinta a tela atras dele e faz a
+       transicao de cor conforme se anda no carrossel. `tilt` e a
+       inclinacao de repouso, em graus — some quando o disco assume o
+       centro, entao so as vizinhas ficam tortas. */
+    // 01 — faixa pedida: The Weeknd, "Earned It" (Fifty Shades of Grey).
+    //      Fonograma comercial (Republic/XO): PRECISA de licenca de
+    //      sincronizacao + fonograma antes de entrar. Nao baixar do
+    //      YouTube. Com a licenca, e so apontar `arquivo` pro mp3.
+    { n: '01', nome: 'Sem pressa',   vibe: 'devagar',        capa: '#c3d7de', fg: '#1b3160', fundo: '#25406f', tilt: -6.5, arquivo: 'assets/audio/01-sem-pressa.m4a' },
+    { n: '02', nome: 'Fricção',      vibe: 'quente',         capa: '#2c4e8f', fg: '#f1f6f8', fundo: '#1d3568', tilt:  5.0, arquivo: 'assets/audio/02-friccao.mp3' },
+    { n: '03', nome: 'Madrugada',    vibe: 'baixo e escuro', capa: '#16233f', fg: '#f1f6f8', fundo: '#0e1930', tilt: -8.0, arquivo: 'assets/audio/03-madrugada.mp3' },
+    { n: '04', nome: 'Primeira vez', vibe: 'nervoso',        capa: '#a6c2cd', fg: '#16233f', fundo: '#2b4a80', tilt:  6.5, arquivo: 'assets/audio/04-primeira-vez.mp3' },
+    { n: '05', nome: 'Depois',       vibe: 'calmo',          capa: '#1b3160', fg: '#f1f6f8', fundo: '#16294d', tilt: -4.5, arquivo: 'assets/audio/05-depois.mp3' },
+  ];
+
+  const ALBUM = 'Casos de atrito, Vol. I';
+  const CHAVE = 'casos-de-atrito:disco';
+
+  /* Geometria do palco — medida na referencia a 1280x800:
+     capa de 499px (39% da largura), vizinha em 0.545 da capa e a
+     413px do centro. Uma queda de perspectiva 1/(1+a|d|) com a=0.83
+     da os dois numeros de uma vez, e ainda comprime as de tras. */
+  const PERSP    = 0.83;
+  const VAO      = 1.54;   // passo lateral, em larguras de capa
+  const CENTRO_Y = 0.56;   // altura do eixo das capas, em fracao da janela
+  const SOBRA    = 0.09;   // quanto o pill do tocador cobre da capa
+  const VEU      = 0.45;   // opacidade do fundo da janela: 1 tampa a pagina, 0 some
+
+  const btn    = document.getElementById('trilhaBtn');
+  const janela = document.getElementById('trilha');
+  if (!btn || !janela) return;
+
+  const palco  = document.getElementById('trilhaPalco');
+  const nota   = document.getElementById('trilhaNota');
+  const tocador= document.getElementById('tocador');
+  const play   = document.getElementById('tocaPlay');
+  const icoP   = document.getElementById('tocaIcoPlay');
+  const icoS   = document.getElementById('tocaIcoPause');
+  const elNome = document.getElementById('tocaNome');
+  const elSub  = document.getElementById('tocaSub');
+  const elTemp = document.getElementById('tocaTempo');
+  const barra  = document.getElementById('tocaBarra');
+  const fechar = document.getElementById('trilhaClose');
+
+  const som = new Audio();
+  som.preload = 'none';
+
+  const reduzido = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  let atual = 0;              // disco escolhido (inteiro)
+  let pos = 0;                // posicao no carrossel (fracionaria)
+  let alvo = 0;               // pra onde ela esta indo
+  let vel = 0;                // velocidade, em discos por frame
+  let arrastando = false;
+  let devolverFoco = null;
+  let sumindo = null;
+  let rodando = false;
+  let capaPx = 320;           // lado da capa em pixels, recalculado no resize
+
+  try {
+    const salvo = parseInt(localStorage.getItem(CHAVE), 10);
+    if (Number.isInteger(salvo) && DISCOS[salvo]) atual = salvo;
+  } catch (e) { /* storage bloqueado: comeca no primeiro */ }
+  pos = alvo = atual;
+
+  const hex2rgb = (h) => [
+    parseInt(h.slice(1, 3), 16) / 255,
+    parseInt(h.slice(3, 5), 16) / 255,
+    parseInt(h.slice(5, 7), 16) / 255,
+  ];
+
+  /* ---------- capas: desenhadas em canvas 2D ----------
+     Mesmo desenho da versao em DOM — cor chapada, brilho na diagonal,
+     numero em serifada, nome e clima. Vira textura no WebGL e imagem
+     de fundo na versao sem WebGL. */
+  const TEX = 512;
+  const SANS  = getComputedStyle(document.body).fontFamily || 'Helvetica, Arial, sans-serif';
+  const SERIF = getComputedStyle(document.documentElement)
+    .getPropertyValue('--serif').trim() || 'Georgia, serif';
+
+  function desenharCapa(d) {
+    const c = document.createElement('canvas');
+    c.width = c.height = TEX;
+    const x = c.getContext('2d');
+
+    x.fillStyle = d.capa;
+    x.fillRect(0, 0, TEX, TEX);
+
+    // sombreado do papel: claro no alto, fundo no pe
+    let g = x.createLinearGradient(0, 0, TEX * 0.55, TEX);
+    g.addColorStop(0, 'rgba(255,255,255,.17)');
+    g.addColorStop(1, 'rgba(0,0,0,.25)');
+    x.fillStyle = g; x.fillRect(0, 0, TEX, TEX);
+
+    // brilho do plastico, na diagonal
+    g = x.createLinearGradient(TEX * 0.15, 0, TEX * 0.92, TEX);
+    g.addColorStop(0.36, 'rgba(255,255,255,0)');
+    g.addColorStop(0.47, 'rgba(255,255,255,.13)');
+    g.addColorStop(0.58, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, TEX, TEX);
+
+    const pad = TEX * 0.075;
+    x.fillStyle = d.fg;
+    x.textBaseline = 'alphabetic';
+
+    x.globalAlpha = 0.72;
+    x.font = `700 ${TEX * 0.026}px ${SANS}`;
+    x.letterSpacing = `${TEX * 0.005}px`;
+    x.fillText('PRUDENCE LUB', pad, pad + TEX * 0.026);
+    x.letterSpacing = '0px';
+
+    // o pe da capa fica livre: e onde o pill do tocador encosta
+    const base = TEX * 0.80;
+    x.globalAlpha = 0.42;
+    x.font = `400 ${TEX * 0.135}px ${SERIF}`;
+    x.fillText(d.n, pad, base - TEX * 0.135);
+
+    x.globalAlpha = 1;
+    x.font = `400 ${TEX * 0.072}px ${SERIF}`;
+    x.fillText(d.nome, pad, base - TEX * 0.03);
+
+    x.globalAlpha = 0.66;
+    x.font = `400 ${TEX * 0.028}px ${SANS}`;
+    x.letterSpacing = `${TEX * 0.004}px`;
+    x.fillText(d.vibe.toUpperCase(), pad, base + TEX * 0.012);
+
+    // grao fino, pro chapado nao ficar plastico demais
+    x.globalAlpha = 1;
+    const img = x.getImageData(0, 0, TEX, TEX);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const n = (Math.random() - 0.5) * 9;
+      img.data[i] += n; img.data[i + 1] += n; img.data[i + 2] += n;
+    }
+    x.putImageData(img, 0, 0);
+
+    return c;
+  }
+
+  const artes = DISCOS.map(desenharCapa);
+
+  /* ---------- capas no DOM: semantica, foco e clique ---------- */
+  const capas = DISCOS.map((d, i) => {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'capa';
+    el.addEventListener('click', () => {
+      if (moveu) return;                       // arrasto nao conta como clique
+      i === atual ? alternar() : irPara(i);
+    });
+    palco.appendChild(el);
+    return el;
+  });
+
+  /* ---------- WebGL: as capas de verdade ---------- */
+  const gl = (() => {
+    if (reduzido) return null;
+    const c = document.createElement('canvas');
+    c.className = 'trilha__gl';
+    c.setAttribute('aria-hidden', 'true');
+    // alpha no contexto: o palco nao pinta uma parede opaca, ele
+    // deita um veu por cima da lamina d'agua da pagina
+    const ctx = c.getContext('webgl2', { alpha: true, antialias: true, premultipliedAlpha: true });
+    if (!ctx) return null;
+    janela.insertBefore(c, palco);
+    return ctx;
+  })();
+
+  let R = null;   // renderizador; null = versao sem WebGL
+  if (gl) {
+    janela.classList.add('tem-gl');
+    R = montarGL(gl, artes);
+  } else {
+    // sem WebGL as capas do DOM e que pintam
+    capas.forEach((el, i) => { el.style.backgroundImage = `url(${artes[i].toDataURL('image/png')})`; });
+  }
+
+  /* ---------- layout: uma conta so pro DOM e pro WebGL ----------
+     Cada disco vira {x, escala, giro, alpha} a partir da distancia
+     ate a posicao atual. A queda 1/(1+a|d|) e o que da a perspectiva:
+     a vizinha cai pra 0.55 e as de tras se comprimem. */
+  function lugar(i) {
+    const d = i - pos;
+    const q = 1 / (1 + Math.abs(d) * PERSP);
+    const grau = DISCOS[i].tilt * Math.min(1, Math.abs(d));
+    return {
+      d,
+      x: d * q * VAO * capaPx,
+      escala: q,
+      giro: grau * Math.PI / 180,
+      // capa e papel, nao vidro: opaca ate a beirada, some so ao sair de cena
+      alpha: Math.max(0, Math.min(1, (2.7 - Math.abs(d)) / 0.7)),
+    };
+  }
+
+  function medir() {
+    const r = janela.getBoundingClientRect();
+    // em tela larga a capa ocupa 39% (medida da referencia); em tela
+    // estreita nao cabe vizinha nenhuma de qualquer jeito, entao ela
+    // cresce e o disco do meio e que manda
+    capaPx = Math.min(r.width * (r.width < 720 ? 0.74 : 0.39), r.height * 0.5);
+    const cy = r.height * CENTRO_Y;
+    palco.style.setProperty('--cy', `${cy}px`);
+    palco.style.setProperty('--capa-w', `${capaPx}px`);
+
+    // o tocador encosta no pe da capa e acompanha a largura dela.
+    // `top` e o centro do pill (ele mesmo se puxa metade pra cima),
+    // entao a borda de cima e que precisa cair dentro da capa.
+    tocador.style.width =
+      `${Math.round(Math.min(Math.max(capaPx * 0.76, 250), r.width - 28))}px`;
+    const alturaPill = tocador.offsetHeight || 68;
+    tocador.style.top =
+      `${Math.round(cy + capaPx / 2 - capaPx * SOBRA + alturaPill / 2)}px`;
+
+    if (R) R.medir(r.width, r.height, cy);
+  }
+
+  function posicionar() {
+    capas.forEach((el, i) => {
+      const p = lugar(i);
+      el.hidden = Math.abs(p.d) > 2.6;
+      el.style.transform =
+        `translate(-50%,-50%) translateX(${p.x}px) rotate(${p.giro}rad) scale(${p.escala})`;
+      el.style.zIndex = String(20 - Math.round(Math.abs(p.d) * 10));
+      if (!R) el.style.opacity = p.alpha;      // com WebGL a capa do DOM nao pinta nada
+      const d = DISCOS[i];
+      el.setAttribute('aria-label',
+        `${d.n}. ${d.nome} — ${d.vibe}${i === atual ? ' (selecionado)' : ''}`);
+      el.setAttribute('aria-current', i === atual ? 'true' : 'false');
+    });
+  }
+
+  /* ---------- fisica: arrasto, inercia e encaixe ---------- */
+  const limite = (v) => Math.max(0, Math.min(DISCOS.length - 1, v));
+
+  function passo() {
+    if (reduzido) { pos = alvo; vel = 0; }     // sem animacao: troca seca
+    else if (!arrastando) {
+      // mola amortecida ate o disco mais proximo
+      const f = (alvo - pos) * 0.14;
+      vel = (vel + f) * 0.76;
+      pos += vel;
+      if (Math.abs(alvo - pos) < 0.0008 && Math.abs(vel) < 0.0008) { pos = alvo; vel = 0; }
+    }
+
+    const quieto = !arrastando && vel === 0 && pos === alvo;
+    posicionar();
+    if (R) R.desenhar(pos, vel, arrastando);
+
+    // o pill some enquanto o carrossel anda e volta quando assenta
+    tocador.classList.toggle('is-oculto', arrastando || Math.abs(vel) > 0.006);
+
+    const perto = Math.round(pos);
+    if (perto !== atual && Math.abs(perto - pos) < 0.5) trocarDisco(perto);
+
+    if (quieto) { rodando = false; return; }
+    requestAnimationFrame(passo);
+  }
+
+  function acordar() {
+    if (rodando) return;
+    rodando = true;
+    requestAnimationFrame(passo);
+  }
+
+  function irPara(i, tocar) {
+    alvo = limite(i);
+    acordar();
+    if (tocar !== undefined) trocarDisco(alvo, tocar);
+  }
+
+  /* ---------- arrasto ---------- */
+  let x0 = 0, pos0 = 0, ultX = 0, ultT = 0, velPx = 0, moveu = false, ponteiro = null;
+
+  let pendente = false;
+
+  /* A captura de ponteiro so entra DEPOIS que o dedo anda de verdade.
+     Capturar ja no pointerdown redireciona o clique pro palco, e ai
+     clicar numa capa vizinha virava clique no fundo — que fecha a
+     janela em vez de trocar de disco. */
+  palco.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    pendente = true; moveu = false; ponteiro = e.pointerId;
+    x0 = ultX = e.clientX; pos0 = pos; velPx = 0; ultT = performance.now();
+  });
+
+  palco.addEventListener('pointermove', (e) => {
+    if ((!pendente && !arrastando) || e.pointerId !== ponteiro) return;
+    const dx = e.clientX - x0;
+
+    if (pendente) {
+      if (Math.abs(dx) <= 4) return;          // ainda pode ser clique
+      pendente = false; arrastando = true; moveu = true;
+      palco.setPointerCapture(e.pointerId);
+      palco.classList.add('is-arrastando');
+      acordar();
+    }
+
+    const agora = performance.now();
+    const dt = Math.max(1, agora - ultT);
+    velPx = (e.clientX - ultX) / dt * 16;      // px por frame
+    ultX = e.clientX; ultT = agora;
+
+    let p = pos0 - dx / (VAO * capaPx);
+    // fora das pontas o arrasto fica pesado, em vez de travar seco
+    if (p < 0) p = p * 0.32;
+    else if (p > DISCOS.length - 1) p = (DISCOS.length - 1) + (p - (DISCOS.length - 1)) * 0.32;
+    pos = p;
+    vel = -velPx / (VAO * capaPx);
+  });
+
+  const soltar = (e) => {
+    if (e && e.pointerId !== ponteiro) return;
+    pendente = false;
+    if (!arrastando) { ponteiro = null; return; }   // foi clique, nao arrasto
+    arrastando = false; ponteiro = null;
+    palco.classList.remove('is-arrastando');
+    // a inercia decide quantos discos ainda passam
+    alvo = limite(Math.round(pos + vel * 9));
+    acordar();
+    setTimeout(() => { moveu = false; }, 0);
+  };
+  palco.addEventListener('pointerup', soltar);
+  palco.addEventListener('pointercancel', soltar);
+
+  // roda do mouse / trackpad: o eixo que se mexer mais manda
+  let travaRoda = 0;
+  palco.addEventListener('wheel', (e) => {
+    const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(dx) < 2) return;
+    e.preventDefault();
+    const agora = performance.now();
+    if (agora - travaRoda < 260) return;
+    travaRoda = agora;
+    irPara(alvo + Math.sign(dx));
+  }, { passive: false });
+
+  /* ---------- tocador ---------- */
+  const mmss = (s) =>
+    Number.isFinite(s)
+      ? `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+      : '--:--';
+
+  /* Os caminhos ja apontam pra assets/audio/. O que ainda nao existe
+     entra em `semArquivo` na primeira abertura, e o disco fica com o
+     play desabilitado — nada de botao que promete som e nao entrega.
+     Soltar o mp3 na pasta com o nome certo e o unico passo que falta. */
+  const semArquivo = new Set();
+  let sondado = false;
+
+  const temAudio = (i) => !!DISCOS[i].arquivo && !semArquivo.has(i);
+
+  async function sondar() {
+    if (sondado) return;
+    sondado = true;
+    await Promise.all(DISCOS.map(async (d, i) => {
+      if (!d.arquivo) { semArquivo.add(i); return; }
+      try {
+        const r = await fetch(d.arquivo, { method: 'HEAD' });
+        if (!r.ok) semArquivo.add(i);
+      } catch (e) { semArquivo.add(i); }
+    }));
+    pintarTocador();
+    pintarEstado();
+  }
+
+  const pintarTocador = () => {
+    const d = DISCOS[atual];
+    elNome.textContent = `${d.n}. ${d.nome}`;
+    elSub.textContent = ALBUM;
+    play.disabled = !temAudio(atual);
+    nota.hidden = temAudio(atual);
+    if (!temAudio(atual)) { elTemp.textContent = '--:--'; barra.style.width = '0%'; }
+  };
+
+  const pintarEstado = () => {
+    const tocando = !som.paused && temAudio(atual);
+    icoP.hidden = tocando;
+    icoS.hidden = !tocando;
+    play.setAttribute('aria-label', tocando ? 'Pausar' : 'Tocar');
+    btn.classList.toggle('is-tocando', tocando);
+    janela.classList.toggle('is-tocando', tocando);
+  };
+
+  function trocarDisco(i, tocar) {
+    if (i === atual && tocar === undefined) return;
+    atual = limite(i);
+    try { localStorage.setItem(CHAVE, String(atual)); } catch (e) { /* segue sem lembrar */ }
+
+    const tocava = tocar !== undefined ? tocar : !som.paused;
+    som.pause();
+    if (temAudio(atual)) {
+      som.src = DISCOS[atual].arquivo;
+      if (tocava) som.play().catch(() => { /* o navegador pode barrar */ });
+    } else {
+      som.removeAttribute('src');
+    }
+    pintarTocador();
+    pintarEstado();
+  }
+
+  const alternar = () => {
+    if (!temAudio(atual)) return;
+    if (!som.src) som.src = DISCOS[atual].arquivo;
+    if (som.paused) som.play().catch(() => {}); else som.pause();
+  };
+
+  play.addEventListener('click', alternar);
+  document.getElementById('tocaPrev').addEventListener('click', () => irPara(alvo - 1));
+  document.getElementById('tocaNext').addEventListener('click', () => irPara(alvo + 1));
+
+  som.addEventListener('error', () => {
+    const i = DISCOS.findIndex(d => som.src.endsWith(d.arquivo));
+    if (i >= 0) semArquivo.add(i);
+    pintarTocador(); pintarEstado();
+  });
+  som.addEventListener('play', pintarEstado);
+  som.addEventListener('pause', pintarEstado);
+  som.addEventListener('ended', () => irPara(atual + 1, true));
+  som.addEventListener('timeupdate', () => {
+    elTemp.textContent = `${mmss(som.currentTime)} / ${mmss(som.duration)}`;
+    barra.style.width = som.duration ? `${(som.currentTime / som.duration) * 100}%` : '0%';
+  });
+  som.addEventListener('loadedmetadata', () => {
+    elTemp.textContent = `${mmss(som.currentTime)} / ${mmss(som.duration)}`;
+  });
+
+  /* ---------- abrir e fechar ---------- */
+  const focaveis = () =>
+    [...janela.querySelectorAll('button:not([hidden]):not(:disabled)')]
+      .filter(el => el.offsetParent !== null);
+
+  const abrir = () => {
+    clearTimeout(sumindo);
+    devolverFoco = document.activeElement;
+    janela.hidden = false;
+    document.documentElement.classList.add('trilha-aberta');
+    btn.setAttribute('aria-expanded', 'true');
+    sondar();
+    medir();
+    pos = alvo = atual; vel = 0;
+    void janela.offsetWidth;
+    janela.classList.add('is-aberta');
+    acordar();
+    capas[atual].focus({ preventScroll: true });
+  };
+
+  const sair = () => {
+    janela.classList.remove('is-aberta');
+    btn.setAttribute('aria-expanded', 'false');
+    document.documentElement.classList.remove('trilha-aberta');
+    // a musica NAO para junto: a ideia e escrever com ela tocando
+    clearTimeout(sumindo);
+    const some = () => { janela.hidden = true; };
+    if (reduzido) some(); else sumindo = setTimeout(some, 400);
+    if (devolverFoco && devolverFoco.focus) devolverFoco.focus({ preventScroll: true });
+  };
+
+  btn.addEventListener('click', abrir);
+  fechar.addEventListener('click', sair);
+  // o palco cobre a janela inteira, entao "clicar fora" e clicar nele
+  // mesmo, longe das capas — e nunca no fim de um arrasto
+  palco.addEventListener('click', (e) => { if (e.target === palco && !moveu) sair(); });
+
+  janela.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape')     { e.preventDefault(); sair(); return; }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); irPara(alvo - 1); capas[limite(alvo)].focus(); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); irPara(alvo + 1); capas[limite(alvo)].focus(); return; }
+    if (e.key !== 'Tab') return;
+
+    const lista = focaveis();
+    if (!lista.length) return;
+    const primeiro = lista[0], ultimo = lista[lista.length - 1];
+    if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+  });
+
+  addEventListener('resize', () => { if (!janela.hidden) { medir(); acordar(); } });
+
+  medir();
+  posicionar();
+  pintarTocador();
+  pintarEstado();
+
+  /* =============================================================
+     Renderizador WebGL
+
+     Cada capa e uma malha 24x24 desenhada com deformacao: no arrasto
+     o topo e a base saem em sentidos opostos (cisalha) e o meio
+     atrasa (barriga), que e o que da a sensacao de pano em vez de
+     figurinha deslizando. Abaixo de cada capa vai o reflexo, com a
+     textura invertida e alpha caindo. O fundo e um quad de tela
+     inteira cuja cor interpola entre o disco de tras e o da frente.
+     ============================================================= */
+  function montarGL(gl, artes) {
+    const compilar = (tipo, src) => {
+      const s = gl.createShader(tipo);
+      gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      return s;
+    };
+    const programa = (v, f) => {
+      const p = gl.createProgram();
+      gl.attachShader(p, compilar(gl.VERTEX_SHADER, v));
+      gl.attachShader(p, compilar(gl.FRAGMENT_SHADER, f));
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+      const u = {};
+      const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+      for (let i = 0; i < n; i++) {
+        const nome = gl.getActiveUniform(p, i).name;
+        u[nome] = gl.getUniformLocation(p, nome);
+      }
+      return { p, u };
+    };
+
+    const CAPA_VS = `#version 300 es
+      precision highp float;
+      layout(location=0) in vec2 aG;      // -0.5..0.5
+      uniform vec2  uRes;
+      uniform vec2  uCentro;              // px, canto superior esquerdo
+      uniform float uLado;                // px
+      uniform float uGiro;
+      uniform float uCisalha;             // px — topo e base em sentidos opostos
+      uniform float uBarriga;             // px — o meio atrasa
+      uniform float uRefl;
+      out vec2 vUv;
+      const float PI = 3.14159265;
+      void main(){
+        vUv = aG + 0.5;
+        vec2 p = aG * uLado;
+        p.x += uCisalha * aG.y * 2.0;
+        p.x += uBarriga * cos(aG.y * PI);
+        p.y += uBarriga * 0.18 * cos(aG.x * PI);
+        float c = cos(uGiro), s = sin(uGiro);
+        p = vec2(p.x * c - p.y * s, p.x * s + p.y * c);
+        if (uRefl > 0.5) p.y = -p.y;
+        vec2 px = uCentro + p;
+        vec2 ndc = px / uRes * 2.0 - 1.0;
+        gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);
+      }`;
+
+    const CAPA_FS = `#version 300 es
+      precision highp float;
+      in vec2 vUv;
+      uniform sampler2D uTex;
+      uniform float uAlpha, uRefl, uSombra;
+      out vec4 cor;
+      void main(){
+        // o reflexo ja vem espelhado na geometria: inverter o uv aqui
+        // de novo desfaria o espelho e colaria o topo da capa no pe dela
+        vec4 c = texture(uTex, vUv);
+        float a = uAlpha;
+        // o reflexo morre rapido: so a lambida logo abaixo da capa
+        if (uRefl > 0.5) a *= 0.17 * pow(clamp(vUv.y, 0.0, 1.0), 5.0);
+        c.rgb *= uSombra;
+        cor = vec4(c.rgb * a, a);
+      }`;
+
+    const FUNDO_VS = `#version 300 es
+      precision highp float;
+      layout(location=0) in vec2 aG;
+      void main(){ gl_Position = vec4(aG * 2.0, 0.0, 1.0); }`;
+
+    const FUNDO_FS = `#version 300 es
+      precision highp float;
+      uniform vec2 uRes;
+      uniform vec3 uA, uB;
+      uniform float uMix, uCy, uVeu;
+      out vec4 cor;
+      float ruido(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      void main(){
+        vec2 uv = gl_FragCoord.xy / uRes;
+        vec3 base = mix(uA, uB, uMix);
+        // clarao atras das capas, no eixo delas
+        float ar = uRes.x / uRes.y;
+        float d = distance(vec2(uv.x * ar, uv.y), vec2(0.5 * ar, 1.0 - uCy));
+        vec3 c = mix(base * 1.30, base * 0.86, smoothstep(0.05, 0.85, d));
+        c += (ruido(gl_FragCoord.xy) - 0.5) * 0.022;
+        // pre-multiplicado: o veu escurece e tinge, mas deixa passar
+        cor = vec4(c * uVeu, uVeu);
+      }`;
+
+    const capaP  = programa(CAPA_VS, CAPA_FS);
+    const fundoP = programa(FUNDO_VS, FUNDO_FS);
+
+    // malha 24x24: resolucao suficiente pra deformacao nao facetar
+    const N = 24, verts = [], idx = [];
+    for (let y = 0; y <= N; y++)
+      for (let x = 0; x <= N; x++) verts.push(x / N - 0.5, y / N - 0.5);
+    for (let y = 0; y < N; y++)
+      for (let x = 0; x < N; x++) {
+        const a = y * (N + 1) + x, b = a + 1, c = a + N + 1, d = c + 1;
+        idx.push(a, c, b, b, c, d);
+      }
+    const vao = gl.createVertexArray();
+    gl.bindVertexArray(vao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
+
+    const quadVao = gl.createVertexArray();
+    gl.bindVertexArray(quadVao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-.5,-.5, .5,-.5, -.5,.5, .5,.5]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+    const texturas = artes.map((c) => {
+      const t = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      return t;
+    });
+
+    const fundos = DISCOS.map(d => hex2rgb(d.fundo));
+    const cv = gl.canvas;
+    let W = 0, H = 0, CY = 0, dpr = 1;
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);   // textura ja sai pre-multiplicada
+
+    return {
+      medir(w, h, cy) {
+        dpr = Math.min(devicePixelRatio || 1, 2);
+        W = w; H = h; CY = cy;
+        cv.width = Math.round(w * dpr);
+        cv.height = Math.round(h * dpr);
+        cv.style.width = `${w}px`;
+        cv.style.height = `${h}px`;
+      },
+
+      desenhar(pos, vel, arrastando) {
+        gl.viewport(0, 0, cv.width, cv.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // ---- fundo: cor do disco de tras interpolando com a do da frente
+        const i0 = Math.max(0, Math.min(DISCOS.length - 1, Math.floor(pos)));
+        const i1 = Math.max(0, Math.min(DISCOS.length - 1, i0 + 1));
+        gl.useProgram(fundoP.p);
+        gl.bindVertexArray(quadVao);
+        gl.uniform2f(fundoP.u.uRes, cv.width, cv.height);
+        gl.uniform3fv(fundoP.u.uA, fundos[i0]);
+        gl.uniform3fv(fundoP.u.uB, fundos[i1]);
+        gl.uniform1f(fundoP.u.uMix, Math.max(0, Math.min(1, pos - i0)));
+        gl.uniform1f(fundoP.u.uCy, CY / H);
+        gl.uniform1f(fundoP.u.uVeu, VEU);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        // ---- capas: de tras pra frente, pra a do centro ficar por cima
+        gl.useProgram(capaP.p);
+        gl.bindVertexArray(vao);
+        gl.uniform2f(capaP.u.uRes, cv.width, cv.height);
+
+        // quanto o carrossel esta andando, em px por frame
+        const andar = vel * VAO * capaPx;
+        const ordem = DISCOS.map((_, i) => i)
+          .filter(i => Math.abs(i - pos) < 2.8)
+          .sort((a, b) => Math.abs(b - pos) - Math.abs(a - pos));
+
+        for (const passe of [1, 0]) {          // 1 = reflexo, depois a capa
+          for (const i of ordem) {
+            const L = lugar(i);
+            const lado = capaPx * L.escala * dpr;
+            const cx = (W / 2 + L.x) * dpr;
+            const cy = (CY + (passe ? capaPx * L.escala : 0)) * dpr;
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texturas[i]);
+            gl.uniform1i(capaP.u.uTex, 0);
+            gl.uniform2f(capaP.u.uCentro, cx, cy);
+            gl.uniform1f(capaP.u.uLado, lado);
+            gl.uniform1f(capaP.u.uGiro, L.giro);
+            gl.uniform1f(capaP.u.uCisalha, -andar * 0.30 * dpr * L.escala);
+            gl.uniform1f(capaP.u.uBarriga, -andar * 0.55 * dpr * L.escala);
+            gl.uniform1f(capaP.u.uRefl, passe);
+            gl.uniform1f(capaP.u.uAlpha, L.alpha);
+            gl.uniform1f(capaP.u.uSombra, 1 - Math.min(0.34, Math.abs(L.d) * 0.16));
+            gl.drawElements(gl.TRIANGLES, idx.length, gl.UNSIGNED_SHORT, 0);
+          }
+        }
+      },
+    };
+  }
+})();

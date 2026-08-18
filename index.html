@@ -57,6 +57,13 @@ try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentEle
 
 <div class="page">
 
+  <!-- fora do pill preto, na ponta esquerda: abre a janela dos discos -->
+  <button class="trilha-btn" id="trilhaBtn" type="button"
+          aria-haspopup="dialog" aria-expanded="false" aria-controls="trilha">
+    <span class="disco-ico" aria-hidden="true"></span>
+    <span class="trilha-btn__label">Trilha</span>
+  </button>
+
   <p class="live" id="live" hidden>
     <span class="live__dot" aria-hidden="true"></span>
     <span id="liveN">32</span> <span class="live__word">anônimos online</span> <span class="live__eyes" aria-hidden="true">👀</span>
@@ -78,8 +85,8 @@ try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentEle
     <section class="hero">
       <div class="wrap">
         <h1 class="r">
-          <img class="hero__art" src="assets/casos-de-atrito.svg"
-               width="2400" height="1025" alt="Casos de atrito"
+          <img class="hero__art" src="assets/historias-de-atrito.webp"
+               width="1005" height="506" alt="Histórias de atrito"
                fetchpriority="high" decoding="async">
         </h1>
         <div class="scroll r" aria-hidden="true">
@@ -254,6 +261,54 @@ try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentEle
 
 </div>
 
+<!-- ============================================================
+     Janela da trilha: escolhe o disco pra escrever "na vibe".
+
+     O palco ocupa a janela inteira e as capas sao <button> de
+     verdade — e o WebGL que pinta por cima, quando disponivel.
+     Capas e tocador sao montados em assets/common.js.
+     ============================================================ -->
+<div class="trilha" id="trilha" hidden role="dialog" aria-modal="true" aria-labelledby="trilhaTitle">
+  <div class="trilha__scrim"></div>
+  <div class="trilha__palco" id="trilhaPalco" aria-label="Discos"></div>
+
+  <div class="tocador" id="tocador">
+    <button class="tocador__play" id="tocaPlay" type="button" aria-label="Tocar">
+      <svg id="tocaIcoPlay" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5 20 12 7 19.5z"/></svg>
+      <svg id="tocaIcoPause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden><path d="M7 4.5h3.6v15H7zM13.4 4.5H17v15h-3.6z"/></svg>
+    </button>
+
+    <div class="tocador__txt">
+      <p class="tocador__nome" id="tocaNome">01. Sem pressa</p>
+      <p class="tocador__sub" id="tocaSub">Casos de atrito, Vol. I</p>
+      <p class="tocador__tempo" id="tocaTempo">--:--</p>
+    </div>
+
+    <div class="tocador__nav">
+      <button id="tocaPrev" type="button" aria-label="Disco anterior">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 5v14L8 12zM6 5h2.2v14H6z"/></svg>
+      </button>
+      <button id="tocaNext" type="button" aria-label="Próximo disco">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5v14l10-7zM15.8 5H18v14h-2.2z"/></svg>
+      </button>
+    </div>
+
+    <span class="tocador__barra" id="tocaBarra"></span>
+  </div>
+
+  <div class="trilha__box">
+    <button class="trilha__close" id="trilhaClose" type="button">fechar</button>
+    <p class="trilha__eyebrow">Escolha o disco</p>
+    <h2 class="trilha__title" id="trilhaTitle">Escreva na vibe</h2>
+    <p class="trilha__sub">Cada disco é um clima. Arraste, escolha o seu e deixe tocando
+      enquanto conta sua história.</p>
+  </div>
+
+  <p class="trilha__nota" id="trilhaNota">
+    As faixas ainda não têm áudio: os arquivos entram em <code>assets/audio/</code>
+    e a trilha passa a tocar. Nada aqui simula som.
+  </p>
+</div>
 <script src="assets/common.js"></script>
 <script>
 /* =============================================================

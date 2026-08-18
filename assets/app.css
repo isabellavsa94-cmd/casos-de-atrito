@@ -843,3 +843,271 @@
     border-top:1px solid var(--line-soft);
     font-size:12px;line-height:1.6;color:var(--muted);
   }
+
+  /* ---------- trilha: botao fora do pill, na ponta esquerda ----------
+     Espelha o contador de presenca, que mora na ponta oposta: mesmo
+     vidro, mesma altura, mesmo recuo da moldura. Some junto com o menu
+     em repouso pra os dois cromos respirarem no mesmo ritmo. */
+  .trilha-btn{
+    position:fixed;
+    top:calc(var(--frame) + 20px);
+    left:calc(var(--frame) + clamp(14px,2.2vw,32px));
+    z-index:45;
+    display:inline-flex;align-items:center;gap:9px;
+    padding:6px 15px 6px 6px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.62);
+    -webkit-backdrop-filter:blur(10px);
+    backdrop-filter:blur(10px);
+    font-family:inherit;
+    font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--navy-deep);
+    cursor:pointer;white-space:nowrap;
+    transition:opacity .35s cubic-bezier(.2,.8,.2,1),background .2s,border-color .2s;
+  }
+  @media (hover:hover) and (pointer:fine){
+    .trilha-btn{opacity:.55}
+    .trilha-btn:hover,.trilha-btn:focus-visible{opacity:1}
+  }
+  .trilha-btn:hover{background:rgba(255,255,255,.85);border-color:var(--navy)}
+  .trilha-btn:focus-visible{outline:2px solid var(--navy);outline-offset:3px}
+  @media (prefers-reduced-motion:reduce){.trilha-btn{transition:none}}
+
+  /* bolachinha: sulcos + selo + furo, tudo em gradiente */
+  .disco-ico{
+    width:24px;height:24px;border-radius:50%;flex:none;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,.9) 0 2px, transparent 2px),
+      radial-gradient(circle at 50% 50%, var(--navy) 0 7px, transparent 7px),
+      repeating-radial-gradient(circle at 50% 50%, #1b2740 0 1.2px, #2b3a5c 1.2px 2.4px);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);
+  }
+  .trilha-btn.is-tocando .disco-ico{animation:disco-gira 3.4s linear infinite}
+  @keyframes disco-gira{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){
+    .trilha-btn.is-tocando .disco-ico{animation:none}
+  }
+
+  /* em tela estreita o pill preto ocupa quase tudo: o botao vira so a
+     bolacha e desce pra linha do contador, sem colidir com o menu */
+  @media (max-width:900px){
+    .trilha-btn{
+      top:calc(var(--frame) + 74px);
+      left:calc(var(--frame) + 12px);
+      padding:6px;
+    }
+    .trilha-btn__label{display:none}
+  }
+
+  /* ---------- janela da trilha ----------
+     O palco ocupa a janela inteira: as capas sao <button> posicionados
+     por JS (mesma conta que alimenta o WebGL), e o canvas pinta por
+     cima. Com WebGL no ar as capas do DOM nao desenham nada — seguem
+     ali so pelo clique, pelo Tab e pelo leitor de tela. */
+  .trilha[hidden]{display:none}   /* guarda: display de autor vence o [hidden] do navegador */
+  .trilha{
+    position:fixed;inset:0;z-index:120;
+    overflow:hidden;
+  }
+  /* Veu, nao parede: a pagina continua aparecendo por tras da janela.
+     As cores sao rgba de proposito — chapar aqui tamparia a lamina
+     d'agua, que e justamente o que se quer ver atravessando. */
+  .trilha__scrim{
+    position:absolute;inset:0;
+    background:radial-gradient(120% 90% at 50% 56%,
+      rgba(35,55,95,.40) 0%, rgba(16,26,46,.52) 55%, rgba(10,17,32,.60) 100%);
+    opacity:0;transition:opacity .35s ease;
+  }
+  .trilha.is-aberta .trilha__scrim{opacity:1}
+  /* com o canvas no ar o veu e ele que deita (uniforme uVeu no shader) */
+  .trilha.tem-gl .trilha__scrim{background:none}
+
+  .trilha__gl{
+    position:absolute;inset:0;
+    display:block;
+    opacity:0;transition:opacity .4s ease;
+    pointer-events:none;
+  }
+  .trilha.is-aberta .trilha__gl{opacity:1}
+
+  .trilha__palco{
+    position:absolute;inset:0;
+    touch-action:pan-y;
+    cursor:grab;
+  }
+  .trilha__palco.is-arrastando{cursor:grabbing}
+
+  .capa[hidden]{display:none}
+  .capa{
+    position:absolute;
+    left:50%;top:var(--cy,50%);
+    width:var(--capa-w,300px);height:var(--capa-w,300px);
+    margin:0;padding:0;border:0;
+    background:center/cover no-repeat;
+    border-radius:2px;
+    cursor:pointer;
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.9);
+  }
+  .capa:focus-visible{outline:2px solid #fff;outline-offset:8px}
+  /* sem pintura propria: o desenho vem do canvas */
+  .trilha.tem-gl .capa{background:none;box-shadow:none}
+
+  /* ---------- textos, por cima do palco ---------- */
+  .trilha__box{
+    position:absolute;
+    top:clamp(18px,4vh,44px);left:50%;transform:translateX(-50%);
+    width:min(100%,720px);
+    padding-inline:clamp(16px,4vw,32px);
+    text-align:center;
+    pointer-events:none;             /* o arrasto atravessa os textos */
+    opacity:0;transition:opacity .4s ease .06s;
+  }
+  .trilha.is-aberta .trilha__box{opacity:1}
+
+  /* O veu e fraco de proposito, entao o texto branco pode cair sobre
+     um trecho claro da agua. A sombra propria resolve sem precisar
+     escurecer a tela inteira de novo. */
+  .trilha__eyebrow,.trilha__title,.trilha__sub,.trilha__nota{
+    text-shadow:0 1px 16px rgba(6,12,24,.85), 0 1px 3px rgba(6,12,24,.6);
+  }
+  .trilha__eyebrow{
+    font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+    font-weight:700;color:var(--mist);
+    margin:0 0 8px;
+  }
+  .trilha__title{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(26px,3.6vw,42px);line-height:1.05;letter-spacing:-.02em;
+    color:#fff;margin:0;
+  }
+  .trilha__sub{
+    margin:10px auto 0;max-width:44ch;
+    font-size:clamp(13px,1.05vw,15px);line-height:1.55;
+    color:rgba(255,255,255,.62);
+  }
+  .trilha__close{
+    position:absolute;
+    top:clamp(18px,4vh,44px);right:clamp(16px,4vw,40px);
+    z-index:31;                      /* acima do palco e do tocador */
+    /* o box e pointer-events:none pra o arrasto atravessar os textos;
+       o botao precisa reativar, senao fica embaixo do palco e morre */
+    pointer-events:auto;
+    display:inline-flex;align-items:center;
+    padding:8px 14px;border-radius:999px;
+    background:transparent;border:1px solid rgba(255,255,255,.28);
+    color:rgba(255,255,255,.8);
+    font-family:inherit;font-size:10px;font-weight:700;
+    letter-spacing:.16em;text-transform:uppercase;
+    cursor:pointer;transition:color .2s,border-color .2s;
+  }
+  .trilha__close:hover{color:#fff;border-color:rgba(255,255,255,.7)}
+  .trilha__close:focus-visible{outline:2px solid #fff;outline-offset:3px}
+  /* em tela estreita o titulo ocupa a largura toda e passaria por baixo
+     do botao: o cabecalho desce pra linha seguinte */
+  @media (max-width:560px){
+    .trilha__box{top:calc(clamp(18px,4vh,44px) + 46px)}
+  }
+
+  /* ---------- tocador ----------
+     Pill preto encostado no pe da capa; some enquanto o carrossel
+     anda e volta quando assenta, como na referencia. Largura e
+     altura vem do JS, que sabe onde a capa parou. */
+  .tocador{
+    position:absolute;
+    left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    z-index:30;                      /* acima das capas, que vao ate 20 */
+    display:flex;align-items:center;
+    gap:clamp(12px,1.6vw,22px);
+    max-width:calc(100vw - 28px);
+    padding:12px 18px 12px 14px;
+    border-radius:999px;
+    background:#191819;
+    box-shadow:0 24px 50px -24px rgba(0,0,0,.95);
+    text-align:left;
+    overflow:hidden;
+    transition:opacity .3s ease,transform .3s cubic-bezier(.2,.8,.2,1);
+  }
+  .tocador.is-oculto{
+    opacity:0;
+    transform:translate(-50%,calc(-50% + 14px)) scale(.96);
+    pointer-events:none;
+  }
+  .tocador__play{
+    flex:none;width:44px;height:44px;
+    display:grid;place-items:center;
+    border-radius:50%;border:0;
+    background:rgba(255,255,255,.1);color:#fff;
+    cursor:pointer;transition:background .2s,transform .2s;
+  }
+  .tocador__play:hover:not(:disabled){background:rgba(255,255,255,.2)}
+  .tocador__play:active:not(:disabled){transform:scale(.95)}
+  .tocador__play:disabled{opacity:.4;cursor:not-allowed}
+  .tocador__play:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  .tocador__play svg[hidden]{display:none}
+
+  .tocador__txt{flex:1 1 auto;min-width:0}
+  .tocador__nome{
+    font-size:14px;font-weight:700;color:#fff;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .tocador__sub,.tocador__tempo{
+    font-size:12px;color:rgba(255,255,255,.6);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .tocador__tempo{font-variant-numeric:tabular-nums;margin-top:1px}
+
+  .tocador__nav{display:flex;gap:4px;flex:none}
+  .tocador__nav button{
+    width:32px;height:32px;display:grid;place-items:center;
+    border:0;background:none;color:rgba(255,255,255,.8);
+    border-radius:50%;cursor:pointer;transition:color .2s,background .2s;
+  }
+  .tocador__nav button:hover{color:#fff;background:rgba(255,255,255,.1)}
+  .tocador__nav button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+
+  /* progresso: fio na base do pill */
+  .tocador__barra{
+    position:absolute;left:0;bottom:0;height:2px;width:0;
+    background:var(--mist);
+  }
+
+  .trilha__nota[hidden]{display:none}
+  .trilha__nota{
+    position:absolute;
+    bottom:clamp(14px,3vh,30px);left:50%;transform:translateX(-50%);
+    width:min(100%,52ch);
+    padding-inline:clamp(16px,4vw,32px);
+    margin:0;text-align:center;
+    font-size:12px;line-height:1.6;color:rgba(255,255,255,.5);
+    pointer-events:none;
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .trilha__scrim,.trilha__gl,.trilha__box,.tocador{transition:none}
+  }
+
+  /* trava a rolagem do fundo enquanto a janela esta aberta */
+  html.trilha-aberta{overflow:hidden}
+
+  /* O fundo da janela e translucido de proposito — a lamina d'agua e a
+     hero continuam aparecendo. Mas o cromo FIXO da pagina (menu, aba,
+     contador, o proprio botao da trilha) ficaria por cima da agua na
+     mesma altura dos textos da janela, e o pill preto do menu cai
+     exatamente atras do titulo. Entao so o cromo recua; o conteudo da
+     pagina continua atravessando. */
+  html.trilha-aberta .nav,
+  html.trilha-aberta .live,
+  html.trilha-aberta .trilha-btn,
+  html.trilha-aberta .tab{
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s ease;
+  }
+  @media (prefers-reduced-motion:reduce){
+    html.trilha-aberta .nav,
+    html.trilha-aberta .live,
+    html.trilha-aberta .trilha-btn,
+    html.trilha-aberta .tab{transition:none}
+  }
