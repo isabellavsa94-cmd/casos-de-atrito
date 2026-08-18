@@ -154,6 +154,7 @@
 
   /* ---------- hero ---------- */
   .hero{
+    position:relative;
     min-height:calc(100svh - var(--frame)*2);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;
@@ -162,12 +163,19 @@
   .hero h1{margin:0;line-height:0}
   .hero__art{
     display:block;
-    width:min(64vw, 450px);
+    width:min(64vw, 650px);
     height:auto;
     margin-inline:auto;
   }
+  /* Fora do fluxo, ancorada no pe do hero: no fluxo ela somava altura
+     abaixo da arte e empurrava o lockup pra cima do centro. Assim o h1
+     fica sozinho e o justify-content:center centra a arte de verdade.
+     Centralizada por `left` + `margin-left`, e nao por transform: a
+     animacao `bob` usa transform e sobrescreveria o translateX. */
   .hero .scroll{
-    margin-top:clamp(46px,9vh,90px);
+    position:absolute;
+    bottom:clamp(96px,13vh,140px);   /* acima da aba fixa do rodape */
+    left:50%;margin-left:-19px;
     width:38px;height:38px;border-radius:50%;
     border:1px solid var(--line);
     display:grid;place-items:center;color:var(--navy);
