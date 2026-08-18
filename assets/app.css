@@ -162,7 +162,7 @@
   .hero h1{margin:0;line-height:0}
   .hero__art{
     display:block;
-    width:min(88vw, 940px);
+    width:min(64vw, 450px);
     height:auto;
     margin-inline:auto;
   }
