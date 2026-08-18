@@ -1321,3 +1321,74 @@
     };
   }
 })();
+
+/* =============================================================
+   Gotas na hero
+
+   O lettering parece feito de agua, entao de vez em quando uma gota
+   se forma numa ponta de baixo e cai.
+
+   As pontas nao foram chutadas: sairam do perfil inferior da propria
+   arte — pra cada coluna, o pixel opaco mais baixo; as pontas sao os
+   minimos locais desse perfil, filtrados por espessura (gota nao se
+   forma em fiapo) e espalhados pra nao cairem duas coladas. A cor de
+   cada uma foi amostrada da arte logo acima do ponto, entao a gota
+   sai da mesma agua da letra.
+
+   Cadencia baixa de proposito: uma gota por vez, com intervalo de
+   3 a 9 segundos. E um detalhe que se nota no canto do olho, nao um
+   chafariz. Sem gota nenhuma em prefers-reduced-motion, e o relogio
+   para com a aba oculta.
+   ============================================================= */
+(() => {
+  const alvo = document.getElementById('heroGotas');
+  if (!alvo || matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+
+  // x, y em % da arte; cor amostrada da propria imagem
+  const PONTAS = [
+    { x: 8.33,  y: 91.59, cor: '#badbde' },
+    { x: 27.55, y: 97.26, cor: '#96c2c8' },
+    { x: 42.02, y: 99.61, cor: '#96c2ca' },
+    { x: 60.06, y: 89.43, cor: '#94c4cd' },
+    { x: 69.57, y: 94.91, cor: '#96c2ca' },
+    { x: 86.82, y: 90.41, cor: '#97c3cd' },
+  ];
+
+  const MIN = 3000, VAR = 6000;
+  let relogio = null;
+  let ultima = -1;
+
+  const pingar = () => {
+    // nao repete a mesma ponta em seguida: duas seguidas no mesmo
+    // lugar leem como animacao em loop, nao como acaso
+    let i = Math.floor(Math.random() * PONTAS.length);
+    if (i === ultima) i = (i + 1 + Math.floor(Math.random() * (PONTAS.length - 1))) % PONTAS.length;
+    ultima = i;
+    const p = PONTAS[i];
+
+    const g = document.createElement('span');
+    g.className = 'gota';
+    g.style.left = `${p.x}%`;
+    g.style.top = `${p.y}%`;
+    g.style.setProperty('--c', p.cor);
+    g.style.setProperty('--d', `${(0.8 + Math.random() * 0.5).toFixed(2)}%`);
+    g.style.setProperty('--queda', `${700 + Math.floor(Math.random() * 500)}%`);
+    g.style.setProperty('--t', `${1700 + Math.floor(Math.random() * 900)}ms`);
+
+    g.addEventListener('animationend', () => g.remove());
+    alvo.appendChild(g);
+
+    agendar();
+  };
+
+  const agendar = () => {
+    clearTimeout(relogio);
+    relogio = setTimeout(pingar, MIN + Math.random() * VAR);
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) clearTimeout(relogio); else agendar();
+  });
+
+  agendar();
+})();
