@@ -174,7 +174,10 @@
     position:absolute;
     width:var(--d);aspect-ratio:1;
     margin-left:calc(var(--d) / -2);
-    background:var(--c);
+    /* brilho no ombro: e o que faz ler como agua e nao como bolinha */
+    background:
+      radial-gradient(circle at 34% 26%, rgba(255,255,255,.72), transparent 46%),
+      var(--c);
     border-radius:50% 50% 50% 50% / 62% 62% 38% 38%;
     opacity:0;
     will-change:transform,opacity;
@@ -188,7 +191,8 @@
     38%  {transform:translateY(6%)   scale(.9,1.32); opacity:.92}
     48%  {transform:translateY(70%)  scale(.78,1.5); opacity:.9}
     62%  {transform:translateY(220%) scale(.72,1.38);opacity:.82}
-    78%  {transform:translateY(470%) scale(.68,1.24);opacity:.6}
+    78%  {transform:translateY(470%) scale(.68,1.24);opacity:.9}
+    92%  {transform:translateY(calc(var(--queda) * .82)) scale(.64,1.16);opacity:.55}
     100% {transform:translateY(var(--queda)) scale(.6,1.1); opacity:0}
   }
   @media (prefers-reduced-motion:reduce){.gota{display:none}}

@@ -1345,16 +1345,20 @@
   if (!alvo || matchMedia('(prefers-reduced-motion:reduce)').matches) return;
 
   // x, y em % da arte; cor amostrada da propria imagem
+  // Cor da arte, escurecida em 20%: gota clara sobre agua clara some.
+  // A primeira versao usava a cor exata do ponto e o efeito rodava sem
+  // ninguem ver — ficava menos de um quarto do tempo na tela, com 6px
+  // de diametro e quase nenhum contraste.
   const PONTAS = [
-    { x: 8.33,  y: 91.59, cor: '#badbde' },
-    { x: 27.55, y: 97.26, cor: '#96c2c8' },
-    { x: 42.02, y: 99.61, cor: '#96c2ca' },
-    { x: 60.06, y: 89.43, cor: '#94c4cd' },
-    { x: 69.57, y: 94.91, cor: '#96c2ca' },
-    { x: 86.82, y: 90.41, cor: '#97c3cd' },
+    { x: 8.33,  y: 91.59, cor: '#94afb1' },
+    { x: 27.55, y: 97.26, cor: '#789ba0' },
+    { x: 42.02, y: 99.61, cor: '#789ba1' },
+    { x: 60.06, y: 89.43, cor: '#769ca4' },
+    { x: 69.57, y: 94.91, cor: '#789ba1' },
+    { x: 86.82, y: 90.41, cor: '#789ca4' },
   ];
 
-  const MIN = 3000, VAR = 6000;
+  const MIN = 2300, VAR = 3600;   // 2,3 a 5,9s entre gotas
   let relogio = null;
   let ultima = -1;
 
@@ -1371,9 +1375,9 @@
     g.style.left = `${p.x}%`;
     g.style.top = `${p.y}%`;
     g.style.setProperty('--c', p.cor);
-    g.style.setProperty('--d', `${(0.8 + Math.random() * 0.5).toFixed(2)}%`);
-    g.style.setProperty('--queda', `${700 + Math.floor(Math.random() * 500)}%`);
-    g.style.setProperty('--t', `${1700 + Math.floor(Math.random() * 900)}ms`);
+    g.style.setProperty('--d', `${(1.7 + Math.random() * 0.9).toFixed(2)}%`);
+    g.style.setProperty('--queda', `${900 + Math.floor(Math.random() * 700)}%`);
+    g.style.setProperty('--t', `${2100 + Math.floor(Math.random() * 800)}ms`);
 
     g.addEventListener('animationend', () => g.remove());
     alvo.appendChild(g);
