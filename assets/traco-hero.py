@@ -6,14 +6,17 @@ entao a largura fica exata e previsivel — nada de adivinhar limiar de
 borrao, que foi a primeira tentativa e saiu com cara de brilho, nao de
 contorno.
 
-    python3 traco-hero.py 8      # raio em px, na escala do arquivo (1005px)
+    python3 traco-hero.py 2            # raio em px, na escala do arquivo (1005px)
+    python3 traco-hero.py 2 000000     # raio + cor do traco em hex (padrao: branco)
 
 Saida: historias-de-atrito-traco.webp, ao lado deste script.
 """
 import sys, os
 from PIL import Image, ImageFilter
 
-r = int(sys.argv[1]) if len(sys.argv) > 1 else 8
+r = int(sys.argv[1]) if len(sys.argv) > 1 else 2
+cor_hex = (sys.argv[2] if len(sys.argv) > 2 else 'ffffff').lstrip('#')
+cor = tuple(int(cor_hex[i:i+2], 16) for i in (0, 2, 4))
 aqui = os.path.dirname(os.path.abspath(__file__))
 im = Image.open(os.path.join(aqui, 'historias-de-atrito.webp')).convert('RGBA')
 
@@ -32,11 +35,11 @@ suave = max(0.45, min(1.1, r * 0.36))
 m = m.filter(ImageFilter.GaussianBlur(suave))
 m = m.point(lambda v: 0 if v < 40 else 255 if v > 150 else int((v - 40) / 110 * 255))
 
-traco = Image.new('RGBA', base.size, (0, 0, 0, 255))
+traco = Image.new('RGBA', base.size, cor + (255,))
 traco.putalpha(m)
 out = Image.alpha_composite(traco, base)
 out = out.crop(out.getchannel('A').getbbox())
 
 cam = os.path.join(aqui, 'historias-de-atrito-traco.webp')
 out.save(cam, 'WEBP', quality=92, method=6)
-print(f'{out.size[0]}x{out.size[1]}  {os.path.getsize(cam)/1024:.0f} KB  (raio {r}px)')
+print(f'{out.size[0]}x{out.size[1]}  {os.path.getsize(cam)/1024:.0f} KB  (raio {r}px, #{cor_hex})')
