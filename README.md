@@ -23,5 +23,9 @@ Estático, sem build e sem dependência externa.
   *Casos de atrito* — o nome da campanha não foi fechado.
 
 
+> **Mudou de endereço.** A campanha passou a se chamar *Histórias de atrito* e o preview
+> novo é https://isabellavsa94-cmd.github.io/historias-de-atrito/ — este aqui segue no ar
+> só porque o link antigo já circulou, e recebe as mesmas atualizações.
+
 > **Preview, não produção.** Marcado como `noindex` de propósito: o conteúdo ainda tem
 > itens pendentes de validação do cliente. Não divulgar como página oficial.
