@@ -353,9 +353,6 @@
      regra que fixa a serifada logo abaixo. */
   .col__head h2.pergunta{
     letter-spacing:-.01em;
-    /* o margin-top do .col__head h2 existia pra afastar da eyebrow;
-       sem ela em cima, o recuo so sobrava */
-    margin-top:0;
   }
 
   .col__head h2{
@@ -364,7 +361,9 @@
     font-size:clamp(28px,3.2vw,42px);
     line-height:1.08;
     letter-spacing:-.02em;
-    margin-top:14px;
+    /* era 14px pra afastar da eyebrow; as duas colunas perderam a
+       delas, entao o recuo virava espaco solto */
+    margin-top:0;
     text-wrap:balance;
   }
   .col__head p{
