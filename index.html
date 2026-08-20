@@ -218,7 +218,6 @@ try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentEle
         <div class="col__head r">
           <span class="eyebrow">O que já contaram</span>
           <h2>Histórias de atrito</h2>
-          <p class="feed__count" id="feedCount"></p>
         </div>
 
         <div class="feed__grid" id="feedGrid"></div>
@@ -448,7 +447,6 @@ try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentEle
   const grid = document.getElementById('feedGrid');
   const empty = document.getElementById('feedEmpty');
   const moreBtn = document.getElementById('feedMore');
-  const countEl = document.getElementById('feedCount');
 
   let stories = [];
   let shown = 0;
@@ -641,12 +639,29 @@ try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentEle
 
     moreBtn.hidden = shown >= stories.length;
     empty.hidden = stories.length > 0;
-    countEl.textContent = stories.length
-      ? `${stories.length} ${stories.length === 1 ? 'história contada' : 'histórias contadas'}`
-      : '';
   }
 
   moreBtn.addEventListener('click', () => paint(false));
+
+  /* Rolagem infinita: o proprio botao "Ver mais" e a sentinela. Quando
+     ele entra em cena — ou seja, quando a pessoa chega no fim do que ja
+     esta na tela — a proxima leva entra sozinha, e o botao volta a ser
+     sentinela mais abaixo. Repete ate acabar, quando ele some.
+
+     O botao CONTINUA no ar de proposito: quem navega por teclado nao
+     "rola ate o fim", e sem observer (ou com ele bloqueado) ele segue
+     sendo o jeito de carregar. Nao e enfeite, e o caminho alternativo.
+
+     rootMargin adianta a carga em 300px, entao a leva seguinte ja esta
+     montada quando a anterior termina — a rolagem nao trava esperando. */
+  if ('IntersectionObserver' in window) {
+    const sentinela = new IntersectionObserver((entradas) => {
+      for (const e of entradas) {
+        if (e.isIntersecting && shown < stories.length) paint(false);
+      }
+    }, { rootMargin: '300px 0px' });
+    sentinela.observe(moreBtn);
+  }
   document.getElementById('again').addEventListener('click', () => {
     document.getElementById('historias').scrollIntoView({ behavior: 'smooth' });
   });

@@ -18,9 +18,14 @@
     --line:rgba(44,78,143,.22);
     --line-soft:rgba(44,78,143,.12);
 
-    /* letra clássica */
+    /* Alte Haas Grotesk nos dois papeis: Bold nos titulos, Regular no
+       texto corrido. As fontes de sistema ficam como rede de seguranca
+       enquanto a webfont nao chega (font-display:swap). */
+    --titulo:"Alte Haas Grotesk","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --sans:"Alte Haas Grotesk","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+    /* serifada sobrou so pros glifos B/I do editor, onde ela e icone e
+       nao titulo — num grotesco o "I" italico vira um risco reto */
     --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua","Times New Roman",Georgia,serif;
-    --sans:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
 
     --maxw:1180px;
     --pad:clamp(20px,5vw,64px);
@@ -42,10 +47,17 @@
   @font-face{
     font-family:"Alte Haas Grotesk";
     /* caminho relativo a ESTE arquivo, nao ao html */
+    src:url("fonts/AlteHaasGroteskRegular.woff2") format("woff2");
+    font-weight:400;
+    font-style:normal;
+    font-display:swap;   /* o texto aparece na hora, na fonte de sistema, e troca quando chega */
+  }
+  @font-face{
+    font-family:"Alte Haas Grotesk";
     src:url("fonts/AlteHaasGroteskBold.woff2") format("woff2");
     font-weight:700;
     font-style:normal;
-    font-display:swap;   /* o texto aparece na hora, na fonte de sistema, e troca quando chega */
+    font-display:swap;
   }
 
   *,*::before,*::after{box-sizing:border-box}
@@ -257,7 +269,7 @@
   }
   .about__head{text-align:center;margin-bottom:clamp(24px,4vh,40px)}
   .about__head h2{
-    font-family:var(--serif);font-weight:400;
+    font-family:var(--titulo);font-weight:700;
     font-size:clamp(32px,5vw,64px);line-height:1.06;letter-spacing:-.02em;margin-top:14px;
   }
   .about__head p{margin:18px auto 0;max-width:44ch;color:var(--muted);font-size:clamp(15px,1.2vw,17px)}
@@ -340,8 +352,6 @@
      `.col__head h2` junto: so `.pergunta` perde em especificidade pra
      regra que fixa a serifada logo abaixo. */
   .col__head h2.pergunta{
-    font-family:"Alte Haas Grotesk","Helvetica Neue",Helvetica,Arial,sans-serif;
-    font-weight:700;
     letter-spacing:-.01em;
     /* o margin-top do .col__head h2 existia pra afastar da eyebrow;
        sem ela em cima, o recuo so sobrava */
@@ -349,8 +359,8 @@
   }
 
   .col__head h2{
-    font-family:var(--serif);
-    font-weight:400;
+    font-family:var(--titulo);
+    font-weight:700;
     font-size:clamp(28px,3.2vw,42px);
     line-height:1.08;
     letter-spacing:-.02em;
@@ -577,7 +587,7 @@
   .done{display:none;text-align:center;padding:clamp(20px,5vw,50px) 0}
   .done.is-on{display:block}
   .done h3{
-    font-family:var(--serif);font-weight:400;
+    font-family:var(--titulo);font-weight:700;
     font-size:clamp(26px,3.6vw,40px);line-height:1.1;letter-spacing:-.02em;
   }
   .done p{margin-top:16px;color:var(--muted)}
@@ -589,7 +599,6 @@
   .done .mark svg{width:26px;height:26px}
 
   /* ---------- feed ---------- */
-  .feed__count{margin-top:14px;font-size:14px;color:var(--muted)}
 
   /* masonry por multi-coluna: cards de alturas diferentes se encaixam
      sem buraco, que e o efeito do grid de depoimentos da referencia */
@@ -723,7 +732,7 @@
     text-align:center;
   }
   .lub-cta p{
-    font-family:var(--serif);font-weight:400;
+    font-family:var(--titulo);font-weight:700;
     font-size:clamp(24px,3.2vw,40px);line-height:1.1;letter-spacing:-.02em;
     color:var(--navy-deep);margin-bottom:26px;
   }
@@ -803,7 +812,7 @@
     margin-bottom:clamp(28px,5vh,44px);
   }
   .gate__title{
-    font-family:var(--serif);font-weight:400;
+    font-family:var(--titulo);font-weight:700;
     font-size:clamp(28px,4.6vw,44px);line-height:1.1;letter-spacing:-.02em;
     color:#fff;margin:0;
   }
@@ -1061,7 +1070,7 @@
     margin:0 0 8px;
   }
   .trilha__title{
-    font-family:var(--serif);font-weight:400;
+    font-family:var(--titulo);font-weight:700;
     font-size:clamp(26px,3.6vw,42px);line-height:1.05;letter-spacing:-.02em;
     color:#fff;margin:0;
   }
