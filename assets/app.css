@@ -32,6 +32,22 @@
     --frame-c:#000;
   }
 
+  /* ---------- webfont ----------
+     Alte Haas Grotesk (Yann Le Coroller) — freeware, redistribuivel
+     desde que o arquivo de licenca ande junto: ele esta em
+     assets/fonts/LICENCA-alte-haas-grotesk.txt e e publicado com o site.
+     Auto-hospedada de proposito: fonte em CDN quebraria a propriedade
+     de zero request externo e meteria cookie de terceiro numa pagina
+     que promete anonimato. */
+  @font-face{
+    font-family:"Alte Haas Grotesk";
+    /* caminho relativo a ESTE arquivo, nao ao html */
+    src:url("fonts/AlteHaasGroteskBold.woff2") format("woff2");
+    font-weight:700;
+    font-style:normal;
+    font-display:swap;   /* o texto aparece na hora, na fonte de sistema, e troca quando chega */
+  }
+
   *,*::before,*::after{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
   @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
@@ -320,6 +336,15 @@
 
   .col__head{margin-bottom:clamp(26px,3.5vh,38px);text-align:center}
   .col__head p{margin-inline:auto}
+  /* Pergunta principal do formulario. O seletor precisa carregar o
+     `.col__head h2` junto: so `.pergunta` perde em especificidade pra
+     regra que fixa a serifada logo abaixo. */
+  .col__head h2.pergunta{
+    font-family:"Alte Haas Grotesk","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight:700;
+    letter-spacing:-.01em;
+  }
+
   .col__head h2{
     font-family:var(--serif);
     font-weight:400;
