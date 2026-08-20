@@ -85,12 +85,16 @@ try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentEle
     <section class="hero">
       <div class="wrap">
         <h1 class="r">
+          <!-- Lettering "Histórias de atrito" guardado, nao apagado:
+               assets/historias-de-atrito.webp (limpo) e -traco.webp (com fio
+               branco). Pra voltar, troque o src, devolva width/height e o
+               <span class="hero__gotas" id="heroGotas"> — sem ele o modulo
+               das gotas sai fora sozinho, porque as pontas foram medidas na
+               silhueta do lettering e nao valem pra marca. -->
           <span class="hero__lockup">
-            <img class="hero__art" src="assets/historias-de-atrito-traco.webp"
-                 width="1009" height="511" alt="Histórias de atrito"
+            <img class="hero__art hero__art--marca" src="assets/prudence-marca.svg"
+                 width="613" height="232" alt="Prudence"
                  fetchpriority="high" decoding="async">
-            <!-- gotas entram aqui, montadas em common.js -->
-            <span class="hero__gotas" id="heroGotas" aria-hidden="true"></span>
           </span>
         </h1>
         <div class="scroll r" aria-hidden="true">

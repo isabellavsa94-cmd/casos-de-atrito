@@ -209,6 +209,12 @@
        Mesmo navy da sombra do tubo do Lub. */
     filter:drop-shadow(0 18px 26px rgba(27,49,96,.34));
   }
+  /* marca no lugar do lettering: inclinada 5deg, e a sombra recua —
+     no preto chapado da marca a sombra navy do lettering emborrava */
+  .hero__art--marca{
+    transform:rotate(5deg);
+    filter:drop-shadow(0 14px 22px rgba(27,49,96,.20));
+  }
   /* Fora do fluxo, ancorada no pe do hero: no fluxo ela somava altura
      abaixo da arte e empurrava o lockup pra cima do centro. Assim o h1
      fica sozinho e o justify-content:center centra a arte de verdade.
