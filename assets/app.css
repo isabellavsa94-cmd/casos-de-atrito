@@ -212,7 +212,7 @@
   /* marca no lugar do lettering: inclinada 5deg, e a sombra recua —
      no preto chapado da marca a sombra navy do lettering emborrava */
   .hero__art--marca{
-    transform:rotate(5deg);
+    transform:rotate(-5deg);
     filter:drop-shadow(0 14px 22px rgba(27,49,96,.20));
   }
   /* Fora do fluxo, ancorada no pe do hero: no fluxo ela somava altura
