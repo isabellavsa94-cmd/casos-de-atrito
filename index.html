@@ -72,11 +72,17 @@ try{if(localStorage.getItem('casos-de-atrito:idade')==='ok')document.documentEle
 
   <header class="nav" id="nav">
     <nav class="nav__pill" aria-label="Principal">
-      <a class="nav__link" href="index.html" aria-current="page">Histórias de atrito</a>
+    <!-- Links do menu guardados, nao apagados. Pra voltar, descomente
+         as duas linhas: o pill volta a distribuir link / marca / link
+         sozinho, porque o espacamento vem do `gap`, nao de medida fixa.
+         O `aria-current` marca a pagina em que se esta.
+
+         <a class="nav__link" href="index.html" aria-current="page">Histórias de atrito</a>
+         <a class="nav__link" href="lub.html">O Lub</a>
+    -->
       <a class="brand" href="index.html" aria-label="Prudence Lub — início">
         <span class="brand__mark" role="img" aria-label="Prudence Lub"></span>
       </a>
-      <a class="nav__link" href="lub.html">O Lub</a>
     </nav>
   </header>
 
